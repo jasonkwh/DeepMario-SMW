@@ -23,7 +23,7 @@ LEARNING_RATE = 0.00025  # Learning rate for the optimizer
 N_STEPS = (
     2_048  # Number of steps to run for each environment per update (per policy rollout)
 )
-MAX_EPISODE_STEPS = 5_000  # Maximum number of steps per episode
+MAX_EPISODE_STEPS = 4_500  # Maximum number of steps per episode
 BATCH_SIZE = 64
 ENT_COEF = 0.01  # Entropy coefficient for the loss calculation
 TARGET_KL = 0.02  # Early-stops epoch updates if policy moves too fast
