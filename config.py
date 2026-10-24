@@ -3,7 +3,7 @@ RESERVED_CPU_CORES = 2
 GAME_NAME = "SuperMarioWorld-Snes-v0"
 STATE_NAME = "YoshiIsland1"
 MODEL_NAME = "mario_ppo"
-VIDEO_RENDER_FPS = 60
+GAME_FPS = 60
 CHECKPOINT_DIR = "./mario_checkpoints/"
 BEST_MODEL_SAVE_DIR = "./mario_best_model/"
 VIDEO_DIR = "./mario_videos/"
@@ -17,6 +17,7 @@ RESUME_FROM = "latest"  # or "best" or "none"
 FRAME_SKIP = (
     4  # Repeat each action for 4 frames to reduce decisions and speed up training
 )
+VIDEO_RENDER_FPS = GAME_FPS // FRAME_SKIP  # one decision per FRAME_SKIP game frames
 OBSERVATION_SHAPE = (84, 96)  # Resize observations to height x width for the CNN input
 LEARNING_RATE = 0.00025  # Learning rate for the optimizer
 N_STEPS = (
