@@ -14,13 +14,6 @@ def evaluate_level_metrics(
     n_eval_episodes: int,
     deterministic: bool = True,
 ) -> dict:
-    """Run evaluation episodes and report level progress, not just reward.
-
-    Rewards are shaped (progress, coins, timer), so mean reward alone cannot
-    tell whether a policy actually gets further into the level or finishes it.
-    This measures the furthest x reached per episode and the share of episodes
-    that end with the level cleared.
-    """
     episode_rewards: list[float] = []
     episode_lengths: list[int] = []
     episode_max_x: list[float] = []

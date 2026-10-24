@@ -7,11 +7,20 @@ from config import (
     BEST_MODEL_SAVE_DIR,
     RESUME_FROM,
     RESERVED_CPU_CORES,
+    TORCH_NUM_THREADS,
 )
 
 
 def get_n_envs() -> int:
     return max(1, len(os.sched_getaffinity(0)) - RESERVED_CPU_CORES)
+
+
+def configure_torch_threads() -> None:
+    torch.set_num_threads(TORCH_NUM_THREADS)
+    print(
+        f"Torch limited to {TORCH_NUM_THREADS} thread(s); "
+        f"env processes get the rest."
+    )
 
 
 def select_training_device() -> torch.device:

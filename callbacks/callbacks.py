@@ -39,15 +39,6 @@ class TensorboardLogExtensionCallback(BaseCallback):
 
 
 class LevelMetricsEvalCallback(EvalCallback):
-    """EvalCallback that also logs how far the policy gets and how often it clears the level.
-
-    Mean reward cannot answer "is it getting further into the level" because the
-    reward is shaped. These two numbers can:
-
-      eval/mean_max_x    mean of the furthest x reached per evaluation episode
-      eval/clear_rate    share of evaluation episodes that end with the level cleared
-    """
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._eval_max_x: list[float] = []
@@ -61,8 +52,6 @@ class LevelMetricsEvalCallback(EvalCallback):
         if not isinstance(info, dict):
             return
 
-        # ProgressRule only updates on the step it runs, so a completion step can
-        # leave max_progress one step behind; info["x"] is the live position.
         self._current_max_x = max(
             self._current_max_x,
             float(info.get("max_progress", 0.0)),

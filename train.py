@@ -14,6 +14,7 @@ from stable_baselines3.common.callbacks import (
 from environment import MarioEnvironment
 from evaluation import evaluate_level_metrics
 from helpers import (
+    configure_torch_threads,
     select_training_device,
     get_best_model_path,
     get_checkpoint_path,
@@ -87,7 +88,7 @@ def final_evaluation(model, eval_env):
             logger.record("final/mean_max_x", metrics["mean_max_x"])
             logger.record("final/clear_rate", metrics["clear_rate"])
             logger.dump(model.num_timesteps)
-        except Exception:  # tensorboard logging here is best-effort only
+        except Exception:
             pass
 
     return metrics
@@ -110,6 +111,8 @@ def get_model_to_save(model, device):
 def main():
     env = None
     eval_env = None
+
+    configure_torch_threads()
 
     try:
         result = subprocess.run(
