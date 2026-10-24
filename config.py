@@ -1,20 +1,33 @@
 import os
 
+from encoders.types import Encoder
+
 SEED = 40
 RESERVED_CPU_CORES = 2
 TORCH_NUM_THREADS = 2
 GAME_NAME = "SuperMarioWorld-Snes-v0"
 STATE_NAME = "YoshiIsland1"
-MODEL_NAME = "mario_ppo"
-TB_LOG_NAME = os.environ.get("TB_LOG_NAME", MODEL_NAME)
+
+_ENCODER_NAME = os.environ.get("ENCODER", Encoder.CNN.value)
+try:
+    ENCODER = Encoder(_ENCODER_NAME)
+except ValueError:
+    raise ValueError(
+        f"ENCODER must be one of {[choice.value for choice in Encoder]}, "
+        f"got {_ENCODER_NAME!r}"
+    ) from None
+
+RUN_NAME = ENCODER.value
+MODEL_NAME = f"mario_ppo_{RUN_NAME}"
+TB_LOG_NAME = os.environ.get("TB_LOG_NAME", RUN_NAME)
 GAME_FPS = 60
 CHECKPOINT_DIR = "./mario_checkpoints/"
-BEST_MODEL_SAVE_DIR = "./mario_best_model/"
+BEST_MODEL_SAVE_DIR = f"./mario_best_model/{RUN_NAME}/"
 VIDEO_DIR = "./mario_videos/"
 LOG_DIR = "./mario_logs/"
 TENSORBOARD_LOG_DIR = f"{LOG_DIR}tensorboard/"
-MONITOR_FILENAME = f"{LOG_DIR}monitor.csv"
-MONITOR_EVALUATION_FILENAME = f"{LOG_DIR}monitor_evaluation.csv"
+MONITOR_FILENAME = f"{LOG_DIR}monitor_{RUN_NAME}.csv"
+MONITOR_EVALUATION_FILENAME = f"{LOG_DIR}monitor_evaluation_{RUN_NAME}.csv"
 RESUME_FROM = "latest"  # or "best" or "none"
 
 # Training parameters

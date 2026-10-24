@@ -11,6 +11,7 @@ from stable_baselines3.common.callbacks import (
     CallbackList,
     CheckpointCallback,
 )
+from encoders import build_policy
 from environment import MarioEnvironment
 from evaluation import evaluate_level_metrics
 from helpers import (
@@ -31,6 +32,7 @@ from callbacks import (
 )
 
 from config import (
+    ENCODER,
     GAME_NAME,
     STATE_NAME,
     MODEL_NAME,
@@ -217,9 +219,11 @@ def main():
             )
             reset_num_timesteps = False
         else:
+            policy_name, policy_kwargs = build_policy(ENCODER)
             model = PPO(
-                policy="CnnPolicy",
+                policy=policy_name,
                 env=env,
+                policy_kwargs=policy_kwargs,
                 device=device,
                 verbose=1,
                 learning_rate=linear_schedule(LEARNING_RATE),

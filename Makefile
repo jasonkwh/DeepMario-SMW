@@ -1,4 +1,5 @@
-TB_LOG_NAME ?= mario_ppo
+ENCODER ?= cnn
+TB_LOG_NAME ?= $(ENCODER)
 BENCH_ENVS ?= 6
 BENCH_SECONDS ?= 60
 
@@ -14,7 +15,7 @@ setup:
 	python setup.py
 
 train: setup
-	TB_LOG_NAME=$(TB_LOG_NAME) python train.py
+	ENCODER=$(ENCODER) TB_LOG_NAME=$(TB_LOG_NAME) python train.py
 
 bench:
 	python tools/bench_env.py --envs $(BENCH_ENVS) --seconds $(BENCH_SECONDS)
