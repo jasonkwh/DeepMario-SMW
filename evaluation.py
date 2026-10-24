@@ -63,6 +63,18 @@ def evaluate_level_metrics(
                 max_xs[index] = 0.0
                 cleared[index] = False
 
+    if not episode_rewards:
+        return {
+            "n_episodes": 0,
+            "mean_reward": 0.0,
+            "std_reward": 0.0,
+            "mean_max_x": 0.0,
+            "best_max_x": 0.0,
+            "clear_rate": 0.0,
+            "cleared_episodes": 0,
+            "mean_length": 0.0,
+        }
+
     return {
         "n_episodes": len(episode_rewards),
         "mean_reward": float(np.mean(episode_rewards)),

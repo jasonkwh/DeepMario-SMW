@@ -18,7 +18,7 @@ train: setup
 	ENCODER=$(ENCODER) TB_LOG_NAME=$(TB_LOG_NAME) python train.py
 
 bench:
-	python tools/bench_env.py --envs $(BENCH_ENVS) --seconds $(BENCH_SECONDS)
+	ENCODER=$(ENCODER) python tools/bench_env.py --envs $(BENCH_ENVS) --seconds $(BENCH_SECONDS)
 
 clean:
 	rm -rf mario_checkpoints/ mario_best_model/ mario_videos/ mario_logs/

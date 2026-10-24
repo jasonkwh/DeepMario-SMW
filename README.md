@@ -34,10 +34,13 @@ needs, so it runs before every training start.
 | `make install` | Requirements + game data |
 
 ```bash
-make train ENCODER=ram                     # runs never share output paths
+make train ENCODER=cnn                     # output paths follow the encoder
 make train TB_LOG_NAME=t4-aug              # separate TensorBoard run
-make bench BENCH_ENVS=2 BENCH_SECONDS=30   # smaller machines
+make bench ENCODER=cnn BENCH_ENVS=2 BENCH_SECONDS=30   # smaller machines
 ```
+
+`ram` and `cnn-yolo` raise as soon as the environment is built, until their
+encoders land.
 
 ## Configuration
 

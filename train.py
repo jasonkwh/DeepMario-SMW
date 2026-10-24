@@ -63,7 +63,7 @@ from config import (
 )
 
 
-def final_evaluation(model, eval_env):
+def final_evaluation(model, eval_env, step: int):
     metrics = evaluate_level_metrics(
         model,
         eval_env,
@@ -89,7 +89,7 @@ def final_evaluation(model, eval_env):
             logger.record("final/mean_reward", metrics["mean_reward"])
             logger.record("final/mean_max_x", metrics["mean_max_x"])
             logger.record("final/clear_rate", metrics["clear_rate"])
-            logger.dump(model.num_timesteps)
+            logger.dump(step)
         except Exception:
             pass
 
@@ -116,6 +116,8 @@ def main():
 
     configure_torch_threads()
     print(f"Tensorboard run name: '{TB_LOG_NAME}'")
+
+    encoder = build_encoder(ENCODER)
 
     try:
         result = subprocess.run(
@@ -150,7 +152,7 @@ def main():
             ],
             start_method="spawn",
         )
-        env = build_encoder(ENCODER).wrap_vec_env(env)
+        env = encoder.wrap_vec_env(env)
 
         checkpoint_path = get_checkpoint_path()
         if checkpoint_path is None:
@@ -194,7 +196,7 @@ def main():
             ],
             start_method="spawn",
         )
-        eval_env = build_encoder(ENCODER).wrap_vec_env(eval_env)
+        eval_env = encoder.wrap_vec_env(eval_env)
         eval_env = VecNormalize(
             eval_env,
             norm_obs=False,
@@ -276,7 +278,7 @@ def main():
 
         # Evaluate and save the same policy: the best checkpoint when available.
         final_model = get_model_to_save(model, device)
-        final_evaluation(final_model, eval_env)
+        final_evaluation(final_model, eval_env, step=model.num_timesteps)
 
         # save the final model
         final_model.save(MODEL_NAME)
