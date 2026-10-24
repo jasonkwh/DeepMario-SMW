@@ -74,7 +74,9 @@ dashed is planned.
 
 Per-env wrappers still apply in a fixed order - `ActionWrapper`, `RewardWrapper`,
 the encoder's own observation stack, `TimeLimit`, `Monitor` - and only the reward,
-action and time wrappers are shared by every encoder.
+action and time wrappers are shared by every encoder. The two channels are
+independent by dependency, not by plumbing: the reward scalar still passes through
+the encoder's skip wrapper, which sums it over `FRAME_SKIP` frames.
 
 ```mermaid
 flowchart TD
