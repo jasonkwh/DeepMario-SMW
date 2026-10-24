@@ -9,7 +9,7 @@ install:
 setup:
 	python setup.py
 
-train:
+train: setup
 	python train.py
 
 clean:

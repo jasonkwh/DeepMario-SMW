@@ -7,6 +7,14 @@ from config import GAME_NAME
 def setup_game():
     retro_dir = Path(stable_retro.__file__).parent
     matches = list(retro_dir.rglob(f"{GAME_NAME}/data.json"))
+
+    if not matches:
+        raise RuntimeError(
+            f"{GAME_NAME} is not integrated into stable_retro yet, so there is no "
+            f"data.json to patch under {retro_dir}. Put the game ROM (a .sfc file) "
+            "in the repository root and run `python -m stable_retro.import .` first."
+        )
+
     data_path = matches[0]
 
     print(f"Updating {data_path}")

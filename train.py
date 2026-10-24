@@ -23,7 +23,6 @@ from helpers import (
     linear_schedule,
     remove_best_model_artifacts,
 )
-from setup import setup_game
 from callbacks import (
     TensorboardLogExtensionCallback,
     RecordVideoCallback,
@@ -257,5 +256,4 @@ def main():
 
 
 if __name__ == "__main__":
-    setup_game()
     main()
