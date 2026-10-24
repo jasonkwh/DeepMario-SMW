@@ -1,9 +1,12 @@
+import os
+
 SEED = 40
 RESERVED_CPU_CORES = 2
 TORCH_NUM_THREADS = 2
 GAME_NAME = "SuperMarioWorld-Snes-v0"
 STATE_NAME = "YoshiIsland1"
 MODEL_NAME = "mario_ppo"
+TB_LOG_NAME = os.environ.get("TB_LOG_NAME", MODEL_NAME)
 GAME_FPS = 60
 CHECKPOINT_DIR = "./mario_checkpoints/"
 BEST_MODEL_SAVE_DIR = "./mario_best_model/"

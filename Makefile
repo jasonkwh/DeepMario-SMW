@@ -1,4 +1,8 @@
-.PHONY: default install setup train clean tensorboard
+TB_LOG_NAME ?= mario_ppo
+BENCH_ENVS ?= 6
+BENCH_SECONDS ?= 60
+
+.PHONY: default install setup train bench clean tensorboard
 
 default: train
 
@@ -10,7 +14,10 @@ setup:
 	python setup.py
 
 train: setup
-	python train.py
+	TB_LOG_NAME=$(TB_LOG_NAME) python train.py
+
+bench:
+	python tools/bench_env.py --envs $(BENCH_ENVS) --seconds $(BENCH_SECONDS)
 
 clean:
 	rm -rf mario_checkpoints/ mario_best_model/ mario_videos/ mario_logs/

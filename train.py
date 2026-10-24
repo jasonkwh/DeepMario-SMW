@@ -34,6 +34,7 @@ from config import (
     GAME_NAME,
     STATE_NAME,
     MODEL_NAME,
+    TB_LOG_NAME,
     BEST_MODEL_SAVE_DIR,
     TENSORBOARD_LOG_DIR,
     CHECKPOINT_DIR,
@@ -113,6 +114,7 @@ def main():
     eval_env = None
 
     configure_torch_threads()
+    print(f"Tensorboard run name: '{TB_LOG_NAME}'")
 
     try:
         result = subprocess.run(
@@ -261,6 +263,7 @@ def main():
                     ),
                 ],
                 reset_num_timesteps=reset_num_timesteps,
+                tb_log_name=TB_LOG_NAME,
             )
         else:
             print(
