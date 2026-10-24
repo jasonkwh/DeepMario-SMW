@@ -3,15 +3,13 @@ import subprocess
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import (
     SubprocVecEnv,
-    VecFrameStack,
-    VecTransposeImage,
     VecNormalize,
 )
 from stable_baselines3.common.callbacks import (
     CallbackList,
     CheckpointCallback,
 )
-from encoders import build_policy
+from encoders import build_encoder, build_policy
 from environment import MarioEnvironment
 from evaluation import evaluate_level_metrics
 from helpers import (
@@ -46,7 +44,6 @@ from config import (
     N_STEPS,
     BATCH_SIZE,
     ENT_COEF,
-    FRAME_STACK,
     TOTAL_TIMESTEPS,
     EVAL_EVERY,
     EVAL_N_ENVS,
@@ -153,8 +150,7 @@ def main():
             ],
             start_method="spawn",
         )
-        env = VecFrameStack(env, n_stack=FRAME_STACK, channels_order="last")
-        env = VecTransposeImage(env)
+        env = build_encoder(ENCODER).wrap_vec_env(env)
 
         checkpoint_path = get_checkpoint_path()
         if checkpoint_path is None:
@@ -198,8 +194,7 @@ def main():
             ],
             start_method="spawn",
         )
-        eval_env = VecFrameStack(eval_env, n_stack=FRAME_STACK, channels_order="last")
-        eval_env = VecTransposeImage(eval_env)
+        eval_env = build_encoder(ENCODER).wrap_vec_env(eval_env)
         eval_env = VecNormalize(
             eval_env,
             norm_obs=False,

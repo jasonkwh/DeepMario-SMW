@@ -25,13 +25,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import torch
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import (
-    SubprocVecEnv,
-    VecFrameStack,
-    VecTransposeImage,
-)
+from stable_baselines3.common.vec_env import SubprocVecEnv
 
-from config import FRAME_SKIP, FRAME_STACK, GAME_NAME, SEED, STATE_NAME
+from config import ENCODER, FRAME_SKIP, GAME_NAME, SEED, STATE_NAME
+from encoders import build_encoder, build_policy
 from environment import MarioEnvironment
 
 
@@ -73,8 +70,7 @@ def build_env(env_count: int, augment: bool):
         ],
         start_method="spawn",
     )
-    env = VecFrameStack(env, n_stack=FRAME_STACK, channels_order="last")
-    return VecTransposeImage(env)
+    return build_encoder(ENCODER).wrap_vec_env(env)
 
 
 def bench_env(env, seconds: float) -> tuple[float, int]:
@@ -106,8 +102,17 @@ def bench_policy(env, obs, iterations: int = 200) -> None:
     devices = ["cpu"] + (["cuda"] if torch.cuda.is_available() else [])
     print("policy forward")
 
+    policy_name, policy_kwargs = build_policy(ENCODER)
+
     for device in devices:
-        model = PPO("CnnPolicy", env, device=device, n_steps=8, batch_size=8)
+        model = PPO(
+            policy_name,
+            env,
+            device=device,
+            n_steps=8,
+            batch_size=8,
+            policy_kwargs=policy_kwargs,
+        )
 
         for _ in range(10):
             model.predict(obs, deterministic=False)

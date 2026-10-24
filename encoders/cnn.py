@@ -1,4 +1,10 @@
+import gymnasium as gym
+from stable_baselines3.common.atari_wrappers import MaxAndSkipEnv
 from stable_baselines3.common.torch_layers import NatureCNN
+from stable_baselines3.common.vec_env import VecFrameStack, VecTransposeImage
+
+from config import OBSERVATION_SHAPE, FRAME_SKIP, FRAME_STACK
+from wrappers import ActionHistory, ObservationAugmentation
 
 from .encoder import Encoder
 
@@ -18,6 +24,18 @@ class CnnEncoder(Encoder):
                 "normalize_images": True,
             },
         )
+
+    def wrap_env(self, env, *, augment=False, seed=0):
+        env = MaxAndSkipEnv(env, skip=FRAME_SKIP)
+        env = gym.wrappers.GrayscaleObservation(env, keep_dim=True)
+        env = gym.wrappers.ResizeObservation(env, shape=OBSERVATION_SHAPE)
+        if augment:
+            env = ObservationAugmentation(env, seed=seed)
+        return ActionHistory(env)
+
+    def wrap_vec_env(self, vec_env):
+        vec_env = VecFrameStack(vec_env, n_stack=FRAME_STACK, channels_order="last")
+        return VecTransposeImage(vec_env)
 
 
 def build_policy() -> tuple[str, dict]:

@@ -21,3 +21,11 @@ class Encoder(ABC):
     @abstractmethod
     def build_policy(self) -> tuple[str, dict]:
         pass
+
+    @abstractmethod
+    def wrap_env(self, env: gym.Env, *, augment: bool = False, seed: int = 0) -> gym.Env:
+        pass
+
+    @abstractmethod
+    def wrap_vec_env(self, vec_env):
+        pass

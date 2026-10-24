@@ -43,25 +43,31 @@ make bench BENCH_ENVS=2 BENCH_SECONDS=30   # smaller machines
 
 All knobs live in `config.py`, each with a short comment. Env count is derived
 there rather than set: usable cores minus `RESERVED_CPU_CORES` (6 on 8 vCPU). The
-valid encoders are the `Encoder` enum in `encoders/types.py`.
+valid encoders are the `EncoderType` enum in `encoders/encoder.py`.
 
 ## Environment
 
-This is the `cnn` pipeline. Order is deliberate; it cannot be shuffled.
+Order is deliberate; it cannot be shuffled. Only `ActionWrapper` and `RewardWrapper`
+are shared by all encoders; everything that touches the observation belongs to the
+encoder (`env = build_encoder(ENCODER).wrap_env(...)`), shown here for `cnn`.
 
 ```
 stable_retro.make(SuperMarioWorld-Snes-v0, state=YoshiIsland1)
   ActionWrapper             19 discrete button combos
   RewardWrapper             shaped reward
+  --- cnn encoder ---
   MaxAndSkipEnv             repeat action for FRAME_SKIP frames
   GrayscaleObservation      keep_dim
   ResizeObservation         84 x 96
   ObservationAugmentation   training only: photometric + translation jitter
-  TimeLimit                 MAX_EPISODE_STEPS
-  RecordVideo               only when requested
   ActionHistory             3 constant planes of recent actions
+  -------------------
+  TimeLimit                 MAX_EPISODE_STEPS
   Monitor                   episode stats -> CSV
 ```
+
+`RecordVideo` is not part of this stack - `RecordVideoCallback` wraps a throwaway
+environment with it when the best model improves.
 
 One observation is `(4, 84, 96)` - grayscale frame plus 3 action planes - and
 `VecFrameStack` makes it `(16, 84, 96)`. Action indices are scaled to 0-255 so the
@@ -69,8 +75,11 @@ stock `CnnPolicy` works without a custom extractor.
 
 ## Encoders
 
-`encoders/factory.py` maps an encoder to a policy name and `policy_kwargs`.
-Unimplemented encoders raise instead of silently falling back.
+An encoder owns its whole observation pipeline, not just the network:
+`build_policy()` returns the policy name and `policy_kwargs`, `wrap_env()` applies
+the per-env observation stack, and `wrap_vec_env()` applies the vector-level
+wrappers (`VecFrameStack`, `VecTransposeImage`). `encoders/factory.py` maps the
+enum to an encoder; unimplemented ones raise instead of silently falling back.
 
 | `ENCODER` | State | |
 | --- | --- | --- |

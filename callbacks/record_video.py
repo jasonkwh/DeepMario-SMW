@@ -1,18 +1,37 @@
+from uuid import uuid4
+
+import gymnasium as gym
 from stable_baselines3.common.callbacks import BaseCallback
-from stable_baselines3.common.vec_env import (
-    SubprocVecEnv,
-    VecFrameStack,
-    VecTransposeImage,
-)
+from stable_baselines3.common.vec_env import SubprocVecEnv
 
 from config import (
-    FRAME_STACK,
     GAME_NAME,
     SEED,
     STATE_NAME,
+    VIDEO_DIR,
     VIDEO_EVERY_N_BEST,
+    VIDEO_RENDER_FPS,
+    MODEL_NAME,
+    ENCODER,
 )
+from encoders import build_encoder
 from environment import MarioEnvironment
+
+VIDEO_SEED = SEED + 20_000
+
+
+def build_video_env(seed: int = VIDEO_SEED):
+    return gym.wrappers.RecordVideo(
+        MarioEnvironment(
+            GAME_NAME,
+            STATE_NAME,
+            seed=seed,
+        ),
+        video_folder=VIDEO_DIR,
+        episode_trigger=lambda _: True,
+        fps=VIDEO_RENDER_FPS,
+        name_prefix=f"{MODEL_NAME}-{seed}-{uuid4().hex[:12]}",
+    )
 
 
 class RecordVideoCallback(BaseCallback):
@@ -28,23 +47,10 @@ class RecordVideoCallback(BaseCallback):
             return True
 
         video_env = SubprocVecEnv(
-            [
-                lambda: MarioEnvironment(
-                    GAME_NAME,
-                    STATE_NAME,
-                    monitor_filename=None,
-                    record_video=True,
-                    seed=SEED + 20_000,
-                )
-            ],
+            [lambda: build_video_env()],
             start_method="spawn",
         )
-        video_env = VecFrameStack(
-            video_env,
-            n_stack=FRAME_STACK,
-            channels_order="last",
-        )
-        video_env = VecTransposeImage(video_env)
+        video_env = build_encoder(ENCODER).wrap_vec_env(video_env)
 
         try:
             obs = video_env.reset()
