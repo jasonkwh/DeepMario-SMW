@@ -10,10 +10,9 @@ from stable_baselines3.common.vec_env import (
 from stable_baselines3.common.callbacks import (
     CallbackList,
     CheckpointCallback,
-    EvalCallback,
 )
-from stable_baselines3.common.evaluation import evaluate_policy
 from environment import MarioEnvironment
+from evaluation import evaluate_level_metrics
 from helpers import (
     select_training_device,
     get_best_model_path,
@@ -24,6 +23,7 @@ from helpers import (
     remove_best_model_artifacts,
 )
 from callbacks import (
+    LevelMetricsEvalCallback,
     TensorboardLogExtensionCallback,
     RecordVideoCallback,
     SaveVecNormalizeCallback,
@@ -61,13 +61,36 @@ from config import (
 
 
 def final_evaluation(model, eval_env):
-    mean_reward, std_reward = evaluate_policy(
+    metrics = evaluate_level_metrics(
         model,
         eval_env,
         n_eval_episodes=N_EVAL_EPISODES_FINAL,
         deterministic=True,
     )
-    print(f"Final evaluation: {mean_reward:.2f} +/- {std_reward:.2f}")
+    print(
+        f"Final evaluation: reward {metrics['mean_reward']:.2f} "
+        f"+/- {metrics['std_reward']:.2f} over {metrics['n_episodes']} episodes"
+    )
+    print(
+        f"  max_x   mean {metrics['mean_max_x']:.1f} | best {metrics['best_max_x']:.1f}"
+    )
+    print(
+        f"  cleared {metrics['clear_rate'] * 100:.0f}% "
+        f"({metrics['cleared_episodes']}/{metrics['n_episodes']}) "
+        f"| mean episode length {metrics['mean_length']:.0f} steps"
+    )
+
+    logger = getattr(model, "logger", None)
+    if logger is not None:
+        try:
+            logger.record("final/mean_reward", metrics["mean_reward"])
+            logger.record("final/mean_max_x", metrics["mean_max_x"])
+            logger.record("final/clear_rate", metrics["clear_rate"])
+            logger.dump(model.num_timesteps)
+        except Exception:  # tensorboard logging here is best-effort only
+            pass
+
+    return metrics
 
 
 def get_model_to_save(model, device):
@@ -217,7 +240,7 @@ def main():
                         verbose=2,
                         save_vecnormalize=True,
                     ),
-                    EvalCallback(
+                    LevelMetricsEvalCallback(
                         eval_env,
                         best_model_save_path=BEST_MODEL_SAVE_DIR,
                         log_path=BEST_MODEL_SAVE_DIR,
