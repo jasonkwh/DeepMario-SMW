@@ -65,33 +65,68 @@ valid encoders are the `EncoderType` enum in `encoders/encoder.py`.
 resolves `CnnEncoder` and `build_encoder` lazily, and `make check` fails if
 importing `config` pulls in torch.
 
-## Environment
+## Architecture
 
-Order is deliberate; it cannot be shuffled. Only `ActionWrapper` and `RewardWrapper`
-are shared by all encoders; everything that touches the observation belongs to the
+Order is deliberate; it cannot be shuffled. `ActionWrapper` and `RewardWrapper` are
+shared by every encoder; everything that touches the observation belongs to the
 encoder (`env = build_encoder(ENCODER).wrap_env(...)`), shown here for `cnn`.
+`SubprocVecEnv` runs `get_n_envs()` of these, each in its own process. Blue is
+shared, orange belongs to the encoder.
 
-```
-stable_retro.make(SuperMarioWorld-Snes-v0, state=YoshiIsland1)
-  ActionWrapper             19 discrete button combos
-  RewardWrapper             shaped reward
-  --- cnn encoder ---
-  MaxAndSkipEnv             repeat action for FRAME_SKIP frames, max of the last two
-  GrayscaleObservation      keep_dim
-  ResizeObservation         84 x 96
-  ObservationAugmentation   training only: photometric + translation jitter
-  ActionHistory             3 constant planes of recent actions
-  -------------------
-  TimeLimit                 MAX_EPISODE_STEPS
-  Monitor                   episode stats -> CSV
+```mermaid
+flowchart TD
+  subgraph W["worker process"]
+    direction TB
+    ROM["stable_retro.make<br/>SuperMarioWorld-Snes-v0 / YoshiIsland1"]
+    AW["ActionWrapper<br/>19 discrete button combos"]
+    RW["RewardWrapper<br/>shaped reward + per-rule metrics"]
+    subgraph E["encoder: cnn, pluggable"]
+      direction TB
+      MS["MaxAndSkipEnv<br/>repeat action x FRAME_SKIP, frame max"]
+      GS["GrayscaleObservation<br/>keep_dim"]
+      RS["ResizeObservation<br/>84 x 96"]
+      AUG["ObservationAugmentation<br/>training only"]
+      AH["ActionHistory<br/>3 constant planes"]
+    end
+    TL["TimeLimit<br/>MAX_EPISODE_STEPS"]
+    MON["Monitor<br/>episode stats in CSV"]
+    ROM --> AW --> RW --> MS --> GS --> RS --> AUG --> AH --> TL --> MON
+  end
+  MON --> FS["VecFrameStack 4<br/>then VecTransposeImage"]
+  FS --> VN["VecNormalize<br/>norm_reward, clip_reward"]
+  VN --> PPO["PPO CnnPolicy<br/>16 x 84 x 96 in, 19 actions out"]
+  classDef shared fill:#dbe9f7,stroke:#3f6fa8,color:#12314f
+  classDef plug fill:#fce3c4,stroke:#b5762a,color:#4a2c05
+  class AW,RW,TL,MON shared
+  class MS,GS,RS,AUG,AH plug
+  style E fill:#fff8ef,stroke:#b5762a
 ```
 
-`RecordVideo` is not part of this stack - `RecordVideoCallback` wraps a throwaway
+Callbacks hang off the training loop, not the environment:
+
+```mermaid
+flowchart TD
+  L["model.learn"]
+  L --> TB["TensorboardLogExtensionCallback<br/>reward/* and termination/* per rule"]
+  L --> CK["CheckpointCallback<br/>every CHECKPOINT_EVERY<br/>model + VecNormalize pkl"]
+  L --> EV["LevelMetricsEvalCallback<br/>every EVAL_EVERY on eval_env"]
+  subgraph OUT["from the eval callback"]
+    MET["eval/mean_max_x, eval/clear_rate"]
+    BEST["best_model.zip"]
+  end
+  EV --> MET
+  EV --> BEST
+  EV -.->|new best| VID["RecordVideoCallback<br/>mario_videos/"]
+  EV -.->|new best| VN2["SaveVecNormalizeCallback<br/>best_model_vecnormalize.pkl"]
+```
+
+The eval branch is the same stack with augmentation off, in `EVAL_N_ENVS` processes.
+`RecordVideo` is not part of either stack - `RecordVideoCallback` wraps a throwaway
 environment with it when the best model improves.
 
 One observation is `(4, 84, 96)` - grayscale frame plus 3 action planes - and
-`VecFrameStack` makes it `(16, 84, 96)`. Action indices are scaled to 0-255 so the
-stock `CnnPolicy` works without a custom extractor.
+`VecFrameStack` makes it `(16, 84, 96)`. Action indices in those planes are scaled to
+0-255 so the observation stays uint8 and stock `CnnPolicy` needs no custom extractor.
 
 ## Encoders
 
