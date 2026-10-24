@@ -1,6 +1,6 @@
 import os
 
-from encoders.types import Encoder
+from encoders.encoder import EncoderType
 
 SEED = 40
 RESERVED_CPU_CORES = 2
@@ -8,12 +8,12 @@ TORCH_NUM_THREADS = 2
 GAME_NAME = "SuperMarioWorld-Snes-v0"
 STATE_NAME = "YoshiIsland1"
 
-_ENCODER_NAME = os.environ.get("ENCODER", Encoder.CNN.value)
+_ENCODER_NAME = os.environ.get("ENCODER", EncoderType.CNN.value)
 try:
-    ENCODER = Encoder(_ENCODER_NAME)
+    ENCODER = EncoderType(_ENCODER_NAME)
 except ValueError:
     raise ValueError(
-        f"ENCODER must be one of {[choice.value for choice in Encoder]}, "
+        f"ENCODER must be one of {[choice.value for choice in EncoderType]}, "
         f"got {_ENCODER_NAME!r}"
     ) from None
 

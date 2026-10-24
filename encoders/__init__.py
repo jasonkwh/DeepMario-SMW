@@ -1,15 +1,20 @@
-from .types import Encoder
+from .encoder import Encoder, EncoderType
 
 __all__ = [
     "CnnEncoder",
     "Encoder",
+    "EncoderType",
     "build_policy",
 ]
 
 
 def __getattr__(name):
-    if name in __all__:
-        from . import factory
+    if name == "CnnEncoder":
+        from .cnn import CnnEncoder
 
-        return getattr(factory, name)
+        return CnnEncoder
+    if name == "build_policy":
+        from .factory import build_policy
+
+        return build_policy
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
