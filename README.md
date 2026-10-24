@@ -142,3 +142,8 @@ keep resuming runs in one TensorBoard directory.
   death frame.
 
 `version.yaml` is bumped by CI on every push to `main`.
+
+## License
+
+MIT, see [LICENSE](LICENSE). The licence covers this code only; the game ROM is
+not distributed with it.
