@@ -47,6 +47,7 @@ from config import (
     FRAME_STACK,
     TOTAL_TIMESTEPS,
     EVAL_EVERY,
+    EVAL_N_ENVS,
     N_EVAL_EPISODES,
     CHECKPOINT_EVERY,
     SEED,
@@ -182,12 +183,15 @@ def main():
 
         eval_env = SubprocVecEnv(
             [
-                lambda: MarioEnvironment(
+                lambda rank=rank: MarioEnvironment(
                     GAME_NAME,
                     STATE_NAME,
-                    monitor_filename=MONITOR_EVALUATION_FILENAME,
-                    seed=SEED + 10_000,
+                    monitor_filename=MONITOR_EVALUATION_FILENAME.replace(
+                        ".csv", f"-{rank}.csv"
+                    ),
+                    seed=SEED + 10_000 + rank,
                 )
+                for rank in range(EVAL_N_ENVS)
             ],
             start_method="spawn",
         )

@@ -14,44 +14,57 @@ def evaluate_level_metrics(
     n_eval_episodes: int,
     deterministic: bool = True,
 ) -> dict:
+    num_envs = env.num_envs
+
+    remaining = [n_eval_episodes // num_envs] * num_envs
+    for index in range(n_eval_episodes % num_envs):
+        remaining[index] += 1
+
+    rewards = [0.0] * num_envs
+    lengths = [0] * num_envs
+    max_xs = [0.0] * num_envs
+    cleared = [False] * num_envs
+
     episode_rewards: list[float] = []
     episode_lengths: list[int] = []
     episode_max_x: list[float] = []
     episode_cleared: list[float] = []
 
-    for _ in range(n_eval_episodes):
-        reset_result = env.reset()
-        observations = reset_result[0] if isinstance(reset_result, tuple) else reset_result
+    observations = env.reset()
 
-        done = False
-        total_reward = 0.0
-        length = 0
-        max_x = 0.0
-        cleared = False
+    while any(budget > 0 for budget in remaining):
+        actions, _ = model.predict(observations, deterministic=deterministic)
+        observations, step_rewards, dones, infos = env.step(actions)
 
-        while not done:
-            actions, _ = model.predict(observations, deterministic=deterministic)
-            observations, rewards, dones, infos = env.step(actions)
+        for index in range(num_envs):
+            if remaining[index] == 0:
+                continue
 
-            info = infos[0] if isinstance(infos, (list, tuple)) else infos
-            total_reward += _scalar(rewards)
-            length += 1
-            max_x = max(
-                max_x,
+            info = infos[index] if isinstance(infos, (list, tuple)) else infos
+            rewards[index] += _scalar(step_rewards[index])
+            lengths[index] += 1
+            max_xs[index] = max(
+                max_xs[index],
                 float(info.get("max_progress", 0.0)),
                 float(info.get("x", 0.0)),
             )
             if float(info.get(CLEARED_KEY, 0.0)) > 0.0:
-                cleared = True
-            done = bool(_scalar(dones))
+                cleared[index] = True
 
-        episode_rewards.append(total_reward)
-        episode_lengths.append(length)
-        episode_max_x.append(max_x)
-        episode_cleared.append(1.0 if cleared else 0.0)
+            if dones[index]:
+                episode_rewards.append(rewards[index])
+                episode_lengths.append(lengths[index])
+                episode_max_x.append(max_xs[index])
+                episode_cleared.append(1.0 if cleared[index] else 0.0)
+
+                remaining[index] -= 1
+                rewards[index] = 0.0
+                lengths[index] = 0
+                max_xs[index] = 0.0
+                cleared[index] = False
 
     return {
-        "n_episodes": n_eval_episodes,
+        "n_episodes": len(episode_rewards),
         "mean_reward": float(np.mean(episode_rewards)),
         "std_reward": float(np.std(episode_rewards)),
         "mean_max_x": float(np.mean(episode_max_x)),

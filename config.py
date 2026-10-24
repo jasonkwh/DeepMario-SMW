@@ -41,6 +41,7 @@ MAX_GRAD_NORM = 0.5  # Prevents exploding gradients
 FRAME_STACK = 4  # Number of frames to stack
 TOTAL_TIMESTEPS = 5_000_000
 EVAL_EVERY = 500_000
+EVAL_N_ENVS = 4  # Parallel processes for evaluation; use 2 on a 4-core machine
 N_EVAL_EPISODES = 10  # Number of episodes to run during each evaluation
 N_EVAL_EPISODES_FINAL = 20  # Number of episodes to run during the final evaluation
 CHECKPOINT_EVERY = 50_000  # Save a checkpoint every 50,000 training timesteps
