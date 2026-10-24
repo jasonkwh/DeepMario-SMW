@@ -3,7 +3,7 @@ TB_LOG_NAME ?= $(ENCODER)
 BENCH_ENVS ?= 6
 BENCH_SECONDS ?= 60
 
-.PHONY: default install setup train bench clean tensorboard
+.PHONY: default install setup train bench check clean tensorboard
 
 default: train
 
@@ -19,6 +19,9 @@ train: setup
 
 bench:
 	ENCODER=$(ENCODER) python tools/bench_env.py --envs $(BENCH_ENVS) --seconds $(BENCH_SECONDS)
+
+check:
+	python tools/check_invariants.py
 
 clean:
 	rm -rf mario_checkpoints/ mario_best_model/ mario_videos/ mario_logs/

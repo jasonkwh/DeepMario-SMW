@@ -1,12 +1,23 @@
-# DeepMario-SMW
+<h1 align="center">DeepMario-SMW</h1>
 
-PPO on Super Mario World. The goal is one policy that clears the whole game;
-Yoshi's Island 1 is the current stage, set by `STATE_NAME` in `config.py`.
+<p align="center">
+  PPO on Super Mario World, with pluggable perception.
+</p>
+
+<p align="center">
+  <a href="https://github.com/jasonkwh/DeepMario-SMW/actions/workflows/check.yml"><img src="https://img.shields.io/github/actions/workflow/status/jasonkwh/DeepMario-SMW/check.yml?label=check" alt="check"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
+</p>
+
+---
+
+One policy is meant to clear the whole game; `Yoshi's Island 1` is just the stage
+it learns first, picked by `STATE_NAME` in `config.py`.
 
 Perception is pluggable (`ENCODER`): `cnn` reads stacked 84x96 grayscale frames,
-`ram` and `cnn-yolo` are planned. Everything downstream of perception - reward,
-wrappers, evaluation, training loop - is shared, so the three stay comparable.
-The action space is 19 discrete button combinations.
+`ram` and `cnn-yolo` are planned. Everything downstream - reward, wrappers,
+evaluation, the training loop - is shared, so the three stay comparable. The
+action space is 19 discrete button combinations.
 
 ## Install
 
@@ -25,13 +36,13 @@ needs, so it runs before every training start.
 
 ## Commands
 
-| Command | |
-| --- | --- |
-| `make` / `make train` | Patch game data, then train |
-| `make bench` | Emulator and policy throughput |
-| `make tensorboard` | Serve `mario_logs/tensorboard/` |
-| `make clean` | Delete checkpoints, best model, videos, logs |
-| `make install` | Requirements + game data |
+| Command               |                                              |
+| --------------------- | -------------------------------------------- |
+| `make` / `make train` | Patch game data, then train                  |
+| `make bench`          | Emulator and policy throughput               |
+| `make tensorboard`    | Serve `mario_logs/tensorboard/`              |
+| `make clean`          | Delete checkpoints, best model, videos, logs |
+| `make install`        | Requirements + game data                     |
 
 ```bash
 make train ENCODER=cnn                     # output paths follow the encoder
@@ -84,11 +95,11 @@ the per-env observation stack, and `wrap_vec_env()` applies the vector-level
 wrappers (`VecFrameStack`, `VecTransposeImage`). `encoders/factory.py` maps the
 enum to an encoder; unimplemented ones raise instead of silently falling back.
 
-| `ENCODER` | State | |
-| --- | --- | --- |
-| `cnn` | implemented | Stock `NatureCNN`: conv 32x8x8/4, 64x4x4/2, 64x3x3/1, flatten, linear 512, then PPO heads |
-| `ram` | planned | RAM fields (position, sprite slots, tiles) straight to an MLP |
-| `cnn-yolo` | planned | Pixel stream plus a detection stream |
+| `ENCODER`  | State       |                                                                                           |
+| ---------- | ----------- | ----------------------------------------------------------------------------------------- |
+| `cnn`      | implemented | Stock `NatureCNN`: conv 32x8x8/4, 64x4x4/2, 64x3x3/1, flatten, linear 512, then PPO heads |
+| `ram`      | planned     | RAM fields (position, sprite slots, tiles) straight to an MLP                             |
+| `cnn-yolo` | planned     | Pixel stream plus a detection stream                                                      |
 
 The `cnn` encoder deliberately adds nothing on top of `NatureCNN` - it is the
 end-to-end baseline the other two are measured against.
@@ -97,18 +108,18 @@ end-to-end baseline the other two are measured against.
 
 Values are pre-normalisation; `VecNormalize` normalises and clips them.
 
-| Rule | Value |
-| --- | --- |
-| Level completed | +100 |
-| Time ran out | -10 |
-| Lost a life / last life | -5 / -20 |
-| Coin | +0.2 |
-| Other score increase | +0.05 |
-| Power-up big / cape / fire | +0.1 / +0.2 / +0.2 |
-| Lost a power-up | -0.1 |
-| Star | +0.3 |
-| Timer per step | -0.00025 (doubles below 100) |
-| Progress per pixel of x | +0.005 |
+| Rule                       | Value                        |
+| -------------------------- | ---------------------------- |
+| Level completed            | +100                         |
+| Time ran out               | -10                          |
+| Lost a life / last life    | -5 / -20                     |
+| Coin                       | +0.2                         |
+| Other score increase       | +0.05                        |
+| Power-up big / cape / fire | +0.1 / +0.2 / +0.2           |
+| Lost a power-up            | -0.1                         |
+| Star                       | +0.3                         |
+| Timer per step             | -0.00025 (doubles below 100) |
+| Progress per pixel of x    | +0.005                       |
 
 Rules fire in the order listed in `wrappers/reward.py`; the first termination rule
 that triggers ends the episode.

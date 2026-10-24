@@ -1,0 +1,22 @@
+name: Check
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  check:
+    name: Checking the source code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.13"
+
+      - name: Run invariant checks
+        run: make check
