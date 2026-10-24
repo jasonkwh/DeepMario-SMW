@@ -87,7 +87,6 @@ class LevelMetricsEvalCallback(EvalCallback):
 
             self.logger.record("eval/mean_max_x", mean_max_x)
             self.logger.record("eval/clear_rate", clear_rate)
-            self.logger.dump(self.num_timesteps)
 
             if self.verbose >= 1:
                 print(
