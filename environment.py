@@ -2,7 +2,12 @@ from uuid import uuid4
 
 import gymnasium as gym
 import stable_retro
-from wrappers import ActionWrapper, RewardWrapper
+from wrappers import (
+    ActionHistory,
+    ActionWrapper,
+    ObservationAugmentation,
+    RewardWrapper,
+)
 from stable_baselines3.common.atari_wrappers import MaxAndSkipEnv
 from stable_baselines3.common.monitor import Monitor
 
@@ -23,6 +28,7 @@ class MarioEnvironment(gym.Wrapper):
         state_name,
         monitor_filename=None,
         record_video=False,
+        augment=False,
         seed=0,
     ):
         self._initial_seed = seed
@@ -39,6 +45,9 @@ class MarioEnvironment(gym.Wrapper):
         env = MaxAndSkipEnv(env, skip=FRAME_SKIP)
         env = gym.wrappers.GrayscaleObservation(env, keep_dim=True)
         env = gym.wrappers.ResizeObservation(env, shape=OBSERVATION_SHAPE)
+
+        if augment:
+            env = ObservationAugmentation(env, seed=seed)
         env = gym.wrappers.TimeLimit(
             env,
             max_episode_steps=MAX_EPISODE_STEPS,
@@ -52,6 +61,8 @@ class MarioEnvironment(gym.Wrapper):
                 fps=VIDEO_RENDER_FPS,
                 name_prefix=f"{MODEL_NAME}-{seed}-{uuid4().hex[:12]}",
             )
+
+        env = ActionHistory(env)
 
         super().__init__(
             Monitor(

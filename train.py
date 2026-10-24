@@ -105,6 +105,7 @@ def main():
                     GAME_NAME,
                     STATE_NAME,
                     monitor_filename=MONITOR_FILENAME.replace(".csv", f"-{rank}.csv"),
+                    augment=True,
                     seed=SEED + rank,
                 )
                 for rank in range(get_n_envs())
