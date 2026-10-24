@@ -60,6 +60,7 @@ from config import (
     VF_COEF,
     MAX_GRAD_NORM,
     CLIP_REWARD,
+    VIDEO_EVERY_N_BEST,
 )
 
 
@@ -260,7 +261,7 @@ def main():
                         render=False,
                         callback_on_new_best=CallbackList(
                             [
-                                RecordVideoCallback(),
+                                RecordVideoCallback(VIDEO_EVERY_N_BEST),
                                 SaveVecNormalizeCallback(),
                             ]
                         ),

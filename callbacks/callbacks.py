@@ -14,6 +14,7 @@ from config import (
     GAME_NAME,
     STATE_NAME,
     SEED,
+    VIDEO_EVERY_N_BEST,
 )
 
 
@@ -120,7 +121,17 @@ class SaveVecNormalizeCallback(BaseCallback):
 
 
 class RecordVideoCallback(BaseCallback):
+    def __init__(self, record_every: int = VIDEO_EVERY_N_BEST):
+        super().__init__()
+        self.record_every = max(1, record_every)
+        self.new_best_count = 0
+
     def _on_step(self) -> bool:
+        self.new_best_count += 1
+
+        if self.new_best_count % self.record_every != 0:
+            return True
+
         video_env = SubprocVecEnv(
             [
                 lambda: MarioEnvironment(
