@@ -46,7 +46,7 @@ class ActionHistory(gym.ObservationWrapper):
 
     def _push(self, action: int) -> None:
         # +1 keeps "no action yet" (0) distinct from action index 0.
-        scaled = 255.0 * (int(action) + 1) / (self._n_actions + 1)
+        scaled = int(round(255.0 * (int(action) + 1) / (self._n_actions + 1)))
         self._last_actions = np.concatenate(
             (
                 np.array([scaled], dtype=np.uint8),
