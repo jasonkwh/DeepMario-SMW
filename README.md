@@ -24,6 +24,7 @@ action space is 19 discrete button combinations.
 - Python 3.10+
 - `stable-retro==1.0.1`, `stable-baselines3==2.9.0`, `gymnasium==1.3.0`
 - A Super Mario World ROM in the repo root as `.sfc` (git-ignored, never committed)
+- `ffmpeg` on `PATH` (video recording)
 
 ```bash
 make install     # pip install + patch game data
@@ -40,6 +41,7 @@ needs, so it runs before every training start.
 | --------------------- | -------------------------------------------- |
 | `make` / `make train` | Patch game data, then train                  |
 | `make bench`          | Emulator and policy throughput               |
+| `make check`          | Syntax + import boundary (same as CI)        |
 | `make tensorboard`    | Serve `mario_logs/tensorboard/`              |
 | `make clean`          | Delete checkpoints, best model, videos, logs |
 | `make install`        | Requirements + game data                     |
@@ -50,14 +52,18 @@ make train TB_LOG_NAME=t4-aug              # separate TensorBoard run
 make bench ENCODER=cnn BENCH_ENVS=2 BENCH_SECONDS=30   # smaller machines
 ```
 
-`ram` and `cnn-yolo` raise as soon as the environment is built, until their
-encoders land.
+`ram` and `cnn-yolo` raise as soon as the encoder is built, before any
+environment starts, until their encoders land.
 
 ## Configuration
 
 All knobs live in `config.py`, each with a short comment. Env count is derived
 there rather than set: usable cores minus `RESERVED_CPU_CORES` (6 on 8 vCPU). The
 valid encoders are the `EncoderType` enum in `encoders/encoder.py`.
+
+`config.py` must stay importable without heavy dependencies: `encoders/__init__.py`
+resolves `CnnEncoder` and `build_encoder` lazily, and `make check` fails if
+importing `config` pulls in torch.
 
 ## Environment
 
@@ -70,7 +76,7 @@ stable_retro.make(SuperMarioWorld-Snes-v0, state=YoshiIsland1)
   ActionWrapper             19 discrete button combos
   RewardWrapper             shaped reward
   --- cnn encoder ---
-  MaxAndSkipEnv             repeat action for FRAME_SKIP frames
+  MaxAndSkipEnv             repeat action for FRAME_SKIP frames, max of the last two
   GrayscaleObservation      keep_dim
   ResizeObservation         84 x 96
   ObservationAugmentation   training only: photometric + translation jitter
@@ -121,8 +127,8 @@ Values are pre-normalisation; `VecNormalize` normalises and clips them.
 | Timer per step             | -0.00025 (doubles below 100) |
 | Progress per pixel of x    | +0.005                       |
 
-Rules fire in the order listed in `wrappers/reward.py`; the first termination rule
-that triggers ends the episode.
+Rules run in a fixed order: termination rules first, then shaping (see
+`wrappers/reward.py`). The first termination rule that triggers ends the episode.
 
 ## Evaluation
 
@@ -147,7 +153,7 @@ forward latency on CPU/GPU. `--no-augment` isolates the randomisation cost.
 
 ## Outputs
 
-- `mario_checkpoints/mario_ppo_<encoder>_<steps>_steps.zip` + the matching `_vecnormalize_<steps>_steps.pkl`
+- `mario_checkpoints/mario_ppo_<encoder>_<steps>_steps.zip` + `mario_ppo_<encoder>_vecnormalize_<steps>_steps.pkl`
 - `mario_best_model/<encoder>/best_model.zip` + its VecNormalize stats
 - `mario_logs/monitor_<encoder>-<rank>.csv`, `monitor_evaluation_<encoder>-<rank>.csv`
 - `mario_videos/` - written on every new best model
