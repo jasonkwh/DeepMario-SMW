@@ -67,33 +67,35 @@ importing `config` pulls in torch.
 
 ## Architecture
 
-Order is deliberate; it cannot be shuffled. `ActionWrapper` and `RewardWrapper` are
-shared by every encoder; everything that touches the observation belongs to the
-encoder (`env = build_encoder(ENCODER).wrap_env(...)`), shown here for `cnn`.
-`SubprocVecEnv` runs `get_n_envs()` workers, each around one `stable_retro` env:
-blue is shared, orange belongs to the encoder, grey is vector-level.
+`ENCODER` picks one perception layer at a time; everything downstream of it is
+shared. Reward is independent of perception - it reads the emulator's RAM fields,
+not the observation - so the two branches run in parallel. Solid is implemented,
+dashed is planned.
+
+Per-env wrappers still apply in a fixed order - `ActionWrapper`, `RewardWrapper`,
+the encoder's own observation stack, `TimeLimit`, `Monitor` - and only the reward,
+action and time wrappers are shared by every encoder.
 
 ```mermaid
 flowchart TD
-  subgraph W["worker process"]
-    direction TB
-    AW["ActionWrapper<br/>19 button combos"]
-    RW["RewardWrapper<br/>shaped reward"]
-    MS["MaxAndSkipEnv<br/>x FRAME_SKIP, frame max"]
-    GSR["Grayscale + resize<br/>84 x 96"]
-    AUG["ObservationAugmentation<br/>training only"]
-    AH["ActionHistory<br/>3 action planes"]
-    TL["TimeLimit + Monitor"]
-    AW --> RW --> MS --> GSR --> AUG --> AH --> TL
+  ENV["SuperMarioWorld-Snes-v0<br/>YoshiIsland1"]
+  subgraph P["perception"]
+    direction LR
+    CNN["cnn<br/>pixels"]
+    RAM["ram<br/>planned"]
+    YOLO["cnn-yolo<br/>planned"]
   end
-  TL --> VEC["VecFrameStack + VecNormalize"]
-  VEC --> PPO["PPO CnnPolicy<br/>19 actions"]
-  classDef shared fill:#dbe9f7,stroke:#3f6fa8,color:#12314f
-  classDef plug fill:#fce3c4,stroke:#b5762a,color:#4a2c05
-  classDef vec fill:#eceff3,stroke:#7b8794,color:#1f2933
-  class AW,RW,TL shared
-  class MS,GSR,AUG,AH plug
-  class VEC,PPO vec
+  REW["reward<br/>rules + progress estimate"]
+  PPO["PPO policy"]
+  ENV -->|obs| P
+  P --> PPO
+  ENV -->|RAM info| REW
+  REW --> PPO
+  classDef live fill:#dbe9f7,stroke:#3f6fa8,color:#12314f
+  classDef todo fill:#f5f6f7,stroke:#98a2ad,stroke-dasharray: 4 3,color:#4a5560
+  class CNN,REW,PPO live
+  class RAM,YOLO todo
+  style P fill:#fff8ef,stroke:#b5762a
 ```
 
 Callbacks hang off the training loop, not the environment:
