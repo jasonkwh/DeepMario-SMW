@@ -15,7 +15,7 @@ class ActionWrapper(gym.ActionWrapper):
             ["RIGHT", "A"],  # right spin jump
             ["LEFT", "A"],  # left spin jump
             ["RIGHT", "B"],  # right jump
-            ["LEFT", "B"],  # left jumpa
+            ["LEFT", "B"],  # left jump
             ["Y"],  # pick up item
             ["Y", "DOWN"],  # pick up item + crouch
             ["Y", "B"],  # jump + pick up item

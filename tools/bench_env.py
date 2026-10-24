@@ -27,9 +27,17 @@ import torch
 from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import SubprocVecEnv
 
-from config import ENCODER, FRAME_SKIP, GAME_NAME, SEED, STATE_NAME
+from config import (
+    ENCODER,
+    FRAME_SKIP,
+    GAME_NAME,
+    RESERVED_CPU_CORES,
+    SEED,
+    STATE_NAME,
+)
 from encoders import build_encoder, build_policy
 from environment import MarioEnvironment
+from helpers import get_n_envs
 
 
 def cpu_model() -> str:
@@ -137,8 +145,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--envs",
         type=int,
-        default=max(1, len(os.sched_getaffinity(0)) - 2),
-        help="number of parallel envs (default: usable cores - 2)",
+        default=get_n_envs(),
+        help=f"number of parallel envs (default: usable cores - {RESERVED_CPU_CORES})",
     )
     parser.add_argument("--seconds", type=float, default=60.0)
     parser.add_argument(

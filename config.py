@@ -31,15 +31,11 @@ MONITOR_EVALUATION_FILENAME = f"{LOG_DIR}monitor_evaluation_{RUN_NAME}.csv"
 RESUME_FROM = "latest"  # or "best" or "none"
 
 # Training parameters
-FRAME_SKIP = (
-    4  # Repeat each action for 4 frames to reduce decisions and speed up training
-)
+FRAME_SKIP = 4  # Repeat each action for 4 frames to reduce decisions and speed up training
 VIDEO_RENDER_FPS = GAME_FPS // FRAME_SKIP  # one decision per FRAME_SKIP game frames
 OBSERVATION_SHAPE = (84, 96)  # Resize observations to height x width for the CNN input
 LEARNING_RATE = 0.00025  # Learning rate for the optimizer
-N_STEPS = (
-    2_048  # Number of steps to run for each environment per update (per policy rollout)
-)
+N_STEPS = 2_048  # Steps per environment per update (per policy rollout)
 MAX_EPISODE_STEPS = 4_500  # Maximum number of steps per episode
 VIDEO_EVERY_N_BEST = 1  # Record a video on every Nth new best model
 BATCH_SIZE = 64

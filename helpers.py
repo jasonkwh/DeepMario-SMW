@@ -1,6 +1,8 @@
-from pathlib import Path
 import os
+from pathlib import Path
+
 import torch
+
 from config import (
     CHECKPOINT_DIR,
     MODEL_NAME,
