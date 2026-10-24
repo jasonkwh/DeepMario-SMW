@@ -92,10 +92,20 @@ def main():
     try:
         result = subprocess.run(
             [sys.executable, "-m", "stable_retro.import", "."],
-            check=True,
             capture_output=True,
             text=True,
         )
+
+        if result.stderr.strip():
+            print(result.stderr, file=sys.stderr)
+
+        if result.returncode != 0:
+            print(result.stdout, file=sys.stderr)
+            raise RuntimeError(
+                "ROM import failed with exit code "
+                f"{result.returncode}. Put the game ROM (a .sfc file, which .gitignore "
+                "excludes) in the repository root and run again."
+            )
 
         print(result.stdout)
 
