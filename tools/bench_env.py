@@ -31,7 +31,6 @@ from config import (
     ENCODER,
     FRAME_SKIP,
     GAME_NAME,
-    RESERVED_CPU_CORES,
     SEED,
     STATE_NAME,
 )
@@ -146,7 +145,7 @@ def parse_args() -> argparse.Namespace:
         "--envs",
         type=int,
         default=get_n_envs(),
-        help=f"number of parallel envs (default: usable cores - {RESERVED_CPU_CORES})",
+        help="number of parallel envs (default: usable cores)",
     )
     parser.add_argument("--seconds", type=float, default=60.0)
     parser.add_argument(

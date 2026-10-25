@@ -58,7 +58,7 @@ environment starts, until their encoders land.
 ## Configuration
 
 All knobs live in `config.py`, each with a short comment. Env count is derived
-there rather than set: usable cores minus `RESERVED_CPU_CORES` (6 on 8 vCPU). The
+there rather than set: it is the usable core count (8 on 8 vCPU). The
 valid encoders are the `EncoderType` enum in `encoders/encoder.py`.
 
 `config.py` must stay importable without heavy dependencies: `encoders/__init__.py`

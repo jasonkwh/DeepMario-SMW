@@ -8,13 +8,12 @@ from config import (
     MODEL_NAME,
     BEST_MODEL_SAVE_DIR,
     RESUME_FROM,
-    RESERVED_CPU_CORES,
     TORCH_NUM_THREADS,
 )
 
 
 def get_n_envs() -> int:
-    return max(1, len(os.sched_getaffinity(0)) - RESERVED_CPU_CORES)
+    return max(1, len(os.sched_getaffinity(0)))
 
 
 def configure_torch_threads() -> None:
