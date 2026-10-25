@@ -29,6 +29,9 @@ class CnnEncoder(Encoder):
         env = MaxAndSkipEnv(env, skip=FRAME_SKIP)
         env = gym.wrappers.GrayscaleObservation(env, keep_dim=True)
         env = gym.wrappers.ResizeObservation(env, shape=OBSERVATION_SHAPE)
+        env = gym.wrappers.ReshapeObservation(
+            env, (OBSERVATION_SHAPE[0], OBSERVATION_SHAPE[1], 1)
+        )
         if augment:
             env = ObservationAugmentation(env, seed=seed)
         return ActionHistory(env)
