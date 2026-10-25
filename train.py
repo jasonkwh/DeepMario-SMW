@@ -1,23 +1,20 @@
 import sys
 import subprocess
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import (
-    SubprocVecEnv,
-    VecNormalize,
-)
+from stable_baselines3.common.vec_env import VecNormalize
 from stable_baselines3.common.callbacks import (
     CallbackList,
     CheckpointCallback,
 )
-from encoders import build_encoder, build_policy
-from environment import MarioEnvironment
+from encoders import build_policy
 from evaluation import evaluate_level_metrics
 from helpers import (
+    build_vec_env,
     configure_torch_threads,
+    get_n_envs,
     select_training_device,
     get_best_model_path,
     get_checkpoint_path,
-    get_n_envs,
     get_vecnormalize_path,
     linear_schedule,
     remove_best_model_artifacts,
@@ -31,8 +28,6 @@ from callbacks import (
 
 from config import (
     ENCODER,
-    GAME_NAME,
-    STATE_NAME,
     MODEL_NAME,
     TB_LOG_NAME,
     BEST_MODEL_SAVE_DIR,
@@ -117,8 +112,6 @@ def main():
     configure_torch_threads()
     print(f"Tensorboard run name: '{TB_LOG_NAME}'")
 
-    encoder = build_encoder(ENCODER)
-
     try:
         result = subprocess.run(
             [sys.executable, "-m", "stable_retro.import", "."],
@@ -139,20 +132,11 @@ def main():
 
         print(result.stdout)
 
-        env = SubprocVecEnv(
-            [
-                lambda rank=rank: MarioEnvironment(
-                    GAME_NAME,
-                    STATE_NAME,
-                    monitor_filename=MONITOR_FILENAME.replace(".csv", f"-{rank}.csv"),
-                    augment=True,
-                    seed=SEED + rank,
-                )
-                for rank in range(get_n_envs())
-            ],
-            start_method="spawn",
+        env = build_vec_env(
+            get_n_envs(),
+            augment=True,
+            monitor_filename=MONITOR_FILENAME,
         )
-        env = encoder.wrap_vec_env(env)
 
         checkpoint_path = get_checkpoint_path()
         if checkpoint_path is None:
@@ -182,21 +166,11 @@ def main():
                 gamma=GAMMA,
             )
 
-        eval_env = SubprocVecEnv(
-            [
-                lambda rank=rank: MarioEnvironment(
-                    GAME_NAME,
-                    STATE_NAME,
-                    monitor_filename=MONITOR_EVALUATION_FILENAME.replace(
-                        ".csv", f"-{rank}.csv"
-                    ),
-                    seed=SEED + 10_000 + rank,
-                )
-                for rank in range(EVAL_N_ENVS)
-            ],
-            start_method="spawn",
+        eval_env = build_vec_env(
+            EVAL_N_ENVS,
+            monitor_filename=MONITOR_EVALUATION_FILENAME,
+            seed_offset=10_000,
         )
-        eval_env = encoder.wrap_vec_env(eval_env)
         eval_env = VecNormalize(
             eval_env,
             norm_obs=False,

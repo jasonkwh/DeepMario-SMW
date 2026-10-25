@@ -25,18 +25,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import torch
 from stable_baselines3 import PPO
-from stable_baselines3.common.vec_env import SubprocVecEnv
 
-from config import (
-    ENCODER,
-    FRAME_SKIP,
-    GAME_NAME,
-    SEED,
-    STATE_NAME,
-)
-from encoders import build_encoder, build_policy
-from environment import MarioEnvironment
-from helpers import get_n_envs
+from config import ENCODER, FRAME_SKIP
+from encoders import build_policy
+from helpers import build_vec_env, get_n_envs
 
 
 def cpu_model() -> str:
@@ -61,23 +53,6 @@ def print_machine(env_count: int) -> None:
     if torch.cuda.is_available():
         print(f"  gpu            {torch.cuda.get_device_name(0)}")
     print()
-
-
-def build_env(env_count: int, augment: bool):
-    env = SubprocVecEnv(
-        [
-            lambda rank=rank: MarioEnvironment(
-                GAME_NAME,
-                STATE_NAME,
-                monitor_filename=None,
-                augment=augment,
-                seed=SEED + rank,
-            )
-            for rank in range(env_count)
-        ],
-        start_method="spawn",
-    )
-    return build_encoder(ENCODER).wrap_vec_env(env)
 
 
 def bench_env(env, seconds: float) -> tuple[float, int]:
@@ -161,7 +136,7 @@ def main() -> None:
     args = parse_args()
     print_machine(args.envs)
 
-    env = build_env(args.envs, augment=not args.no_augment)
+    env = build_vec_env(args.envs, augment=not args.no_augment)
     try:
         steps_per_second, _ = bench_env(env, args.seconds)
         if not args.no_policy:

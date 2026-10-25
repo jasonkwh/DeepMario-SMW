@@ -2,18 +2,58 @@ import os
 from pathlib import Path
 
 import torch
+from stable_baselines3.common.vec_env import SubprocVecEnv
+
+from encoders import build_encoder
+from environment import MarioEnvironment
 
 from config import (
     CHECKPOINT_DIR,
+    ENCODER,
+    GAME_NAME,
     MODEL_NAME,
     BEST_MODEL_SAVE_DIR,
     RESUME_FROM,
+    SEED,
+    STATE_NAME,
     TORCH_NUM_THREADS,
 )
 
 
 def get_n_envs() -> int:
     return max(1, len(os.sched_getaffinity(0)))
+
+
+def build_vec_env(
+    n_envs: int,
+    augment: bool = False,
+    monitor_filename: str | None = None,
+    seed_offset: int = 0,
+):
+    """Build the encoder-wrapped SubprocVecEnv shared by training, evaluation and benchmarks.
+
+    Single source of truth for env wiring: change it here and every caller follows.
+    `monitor_filename` is per-env suffixed with the rank when given; `seed_offset`
+    keeps evaluation seeds disjoint from training seeds.
+    """
+    env = SubprocVecEnv(
+        [
+            lambda rank=rank: MarioEnvironment(
+                GAME_NAME,
+                STATE_NAME,
+                monitor_filename=(
+                    monitor_filename.replace(".csv", f"-{rank}.csv")
+                    if monitor_filename
+                    else None
+                ),
+                augment=augment,
+                seed=SEED + seed_offset + rank,
+            )
+            for rank in range(n_envs)
+        ],
+        start_method="spawn",
+    )
+    return build_encoder(ENCODER).wrap_vec_env(env)
 
 
 def configure_torch_threads() -> None:
