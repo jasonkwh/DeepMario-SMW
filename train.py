@@ -11,7 +11,6 @@ from evaluation import evaluate_level_metrics
 from helpers import (
     build_vec_env,
     configure_torch_threads,
-    get_n_envs,
     select_training_device,
     get_best_model_path,
     get_checkpoint_path,
@@ -29,6 +28,7 @@ from callbacks import (
 from config import (
     ENCODER,
     MODEL_NAME,
+    N_ENVS,
     TB_LOG_NAME,
     BEST_MODEL_SAVE_DIR,
     TENSORBOARD_LOG_DIR,
@@ -133,7 +133,7 @@ def main():
         print(result.stdout)
 
         env = build_vec_env(
-            get_n_envs(),
+            N_ENVS,
             augment=True,
             monitor_filename=MONITOR_FILENAME,
         )
@@ -219,7 +219,7 @@ def main():
                 callback=[
                     TensorboardLogExtensionCallback(),
                     CheckpointCallback(
-                        save_freq=max(CHECKPOINT_EVERY // get_n_envs(), 1),
+                        save_freq=max(CHECKPOINT_EVERY // N_ENVS, 1),
                         save_path=CHECKPOINT_DIR,
                         name_prefix=MODEL_NAME,
                         verbose=2,
@@ -229,7 +229,7 @@ def main():
                         eval_env,
                         best_model_save_path=BEST_MODEL_SAVE_DIR,
                         log_path=BEST_MODEL_SAVE_DIR,
-                        eval_freq=max(EVAL_EVERY // get_n_envs(), 1),
+                        eval_freq=max(EVAL_EVERY // N_ENVS, 1),
                         n_eval_episodes=N_EVAL_EPISODES,
                         deterministic=True,
                         verbose=2,

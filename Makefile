@@ -1,6 +1,6 @@
 ENCODER ?= cnn
 TB_LOG_NAME ?= $(ENCODER)
-BENCH_ENVS ?= 6
+N_ENVS ?=
 BENCH_SECONDS ?= 60
 
 .PHONY: default install setup train bench check clean tensorboard
@@ -15,10 +15,10 @@ setup:
 	python setup.py
 
 train: setup
-	ENCODER=$(ENCODER) TB_LOG_NAME=$(TB_LOG_NAME) python train.py
+	N_ENVS=$(N_ENVS) ENCODER=$(ENCODER) TB_LOG_NAME=$(TB_LOG_NAME) python train.py
 
 bench:
-	ENCODER=$(ENCODER) python tools/bench_env.py --envs $(BENCH_ENVS) --seconds $(BENCH_SECONDS)
+	N_ENVS=$(N_ENVS) ENCODER=$(ENCODER) python tools/bench_env.py --seconds $(BENCH_SECONDS)
 
 check:
 	python tools/check_invariants.py

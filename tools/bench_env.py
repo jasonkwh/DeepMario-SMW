@@ -26,9 +26,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import torch
 from stable_baselines3 import PPO
 
-from config import ENCODER, FRAME_SKIP
+from config import ENCODER, FRAME_SKIP, N_ENVS
 from encoders import build_policy
-from helpers import build_vec_env, get_n_envs
+from helpers import build_vec_env
 
 
 def cpu_model() -> str:
@@ -119,8 +119,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--envs",
         type=int,
-        default=get_n_envs(),
-        help="number of parallel envs (default: usable cores)",
+        default=N_ENVS,
+        help="number of parallel envs (default: N_ENVS from config.py)",
     )
     parser.add_argument("--seconds", type=float, default=60.0)
     parser.add_argument(

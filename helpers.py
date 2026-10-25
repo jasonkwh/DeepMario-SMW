@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import torch
@@ -18,10 +17,6 @@ from config import (
     STATE_NAME,
     TORCH_NUM_THREADS,
 )
-
-
-def get_n_envs() -> int:
-    return max(1, len(os.sched_getaffinity(0)))
 
 
 def build_vec_env(

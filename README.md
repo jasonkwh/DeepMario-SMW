@@ -49,7 +49,7 @@ needs, so it runs before every training start.
 ```bash
 make train ENCODER=cnn                     # output paths follow the encoder
 make train TB_LOG_NAME=t4-aug              # separate TensorBoard run
-make bench ENCODER=cnn BENCH_ENVS=2 BENCH_SECONDS=30   # smaller machines
+make bench ENCODER=cnn N_ENVS=2 BENCH_SECONDS=30   # smaller machines
 ```
 
 `ram` and `cnn-yolo` raise as soon as the encoder is built, before any
@@ -57,9 +57,11 @@ environment starts, until their encoders land.
 
 ## Configuration
 
-All knobs live in `config.py`, each with a short comment. Env count is derived
-there rather than set: it is the usable core count (8 on 8 vCPU). The
-valid encoders are the `EncoderType` enum in `encoders/encoder.py`.
+All knobs live in `config.py`, each with a short comment. `N_ENVS` defaults to
+the usable core count (8 on 8 vCPU) and `N_ENVS=6 make train` overrides it for
+one run; training, evaluation and benchmarking all read it. `EVAL_N_ENVS` is
+separate because evaluation pipelines on top of the training envs. The valid
+encoders are the `EncoderType` enum in `encoders/encoder.py`.
 
 `config.py` must stay importable without heavy dependencies: `encoders/__init__.py`
 resolves `CnnEncoder` and `build_encoder` lazily, and `make check` fails if

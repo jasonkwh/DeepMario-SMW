@@ -16,6 +16,17 @@ except ValueError:
         f"got {_ENCODER_NAME!r}"
     ) from None
 
+_N_ENVS_OVERRIDE = os.environ.get("N_ENVS", "").strip()
+if _N_ENVS_OVERRIDE:
+    try:
+        N_ENVS = max(1, int(_N_ENVS_OVERRIDE))
+    except ValueError:
+        raise ValueError(
+            f"N_ENVS must be an integer, got {_N_ENVS_OVERRIDE!r}"
+        ) from None
+else:
+    N_ENVS = max(1, len(os.sched_getaffinity(0)))  # usable cores
+
 FRAME_STACK = 4
 RUN_NAME = f"{ENCODER.value}-{FRAME_STACK}"
 MODEL_NAME = f"mario_ppo_{RUN_NAME}"
