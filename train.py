@@ -213,6 +213,8 @@ def main():
             )
             reset_num_timesteps = True
 
+        model.logger.record("train/n_envs", N_ENVS)
+
         if model.num_timesteps < TOTAL_TIMESTEPS:
             model.learn(
                 total_timesteps=TOTAL_TIMESTEPS - model.num_timesteps,

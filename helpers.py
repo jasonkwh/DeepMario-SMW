@@ -25,12 +25,6 @@ def build_vec_env(
     monitor_filename: str | None = None,
     seed_offset: int = 0,
 ):
-    """Build the encoder-wrapped SubprocVecEnv shared by training, evaluation and benchmarks.
-
-    Single source of truth for env wiring: change it here and every caller follows.
-    `monitor_filename` is per-env suffixed with the rank when given; `seed_offset`
-    keeps evaluation seeds disjoint from training seeds.
-    """
     env = SubprocVecEnv(
         [
             lambda rank=rank: MarioEnvironment(

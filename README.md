@@ -189,8 +189,8 @@ forward latency on CPU/GPU. `--no-augment` isolates the randomisation cost.
 - `mario_videos/` - written on every new best model
 - `mario_logs/tensorboard/<TB_LOG_NAME>/`
 
-Every path is derived from `ENCODER`, so different encoders never overwrite each
-other. `RESUME_FROM` picks the checkpoint; with no checkpoint, stale best-model
+Every path is derived from `RUN_NAME` (`<encoder>-<frame stack>`), so different
+encoders and frame stacks never overwrite each other. `RESUME_FROM` picks the checkpoint; with no checkpoint, stale best-model
 files are removed first so a fresh run cannot inherit an old best. Reuse
 `TB_LOG_NAME` to keep resuming runs in one TensorBoard directory.
 
