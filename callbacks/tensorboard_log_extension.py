@@ -2,6 +2,9 @@ from stable_baselines3.common.callbacks import BaseCallback
 
 
 class TensorboardLogExtensionCallback(BaseCallback):
+    def _on_training_start(self) -> None:
+        self.logger.record("train/n_envs", self.training_env.num_envs)
+
     def _on_step(self) -> bool:
         for env_index, info in enumerate(self.locals.get("infos", [])):
             for key, value in info.items():
