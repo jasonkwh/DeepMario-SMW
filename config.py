@@ -42,7 +42,9 @@ MONITOR_EVALUATION_FILENAME = f"{LOG_DIR}monitor_evaluation_{RUN_NAME}.csv"
 RESUME_FROM = "latest"  # or "best" or "none"
 
 # Training parameters
-FRAME_SKIP = 4  # Repeat each action for 4 frames to reduce decisions and speed up training
+FRAME_SKIP = (
+    4  # Repeat each action for 4 frames to reduce decisions and speed up training
+)
 VIDEO_RENDER_FPS = GAME_FPS // FRAME_SKIP  # one decision per FRAME_SKIP game frames
 OBSERVATION_SHAPE = (84, 96)  # Resize observations to height x width for the CNN input
 LEARNING_RATE = 0.00025  # Learning rate for the optimizer
@@ -59,7 +61,7 @@ CLIP_REWARD = 10.0  # Limit normalized reward magnitude
 CLIP_RANGE = 0.2  # PPO surrogate clip range
 VF_COEF = 0.5  # Value function loss coefficient
 MAX_GRAD_NORM = 0.5  # Prevents exploding gradients
-TOTAL_TIMESTEPS = 50_000
+TOTAL_TIMESTEPS = 2_000_000
 EVAL_EVERY = 250_000
 EVAL_N_ENVS = 4  # Parallel processes for evaluation; use 2 on a 4-core machine
 N_EVAL_EPISODES = 10  # Number of episodes to run during each evaluation
