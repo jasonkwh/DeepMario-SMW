@@ -4,3 +4,4 @@ stable-baselines3==2.9.0
 tensorboard==2.20.0
 protobuf>=5.29.1,<6.0.0
 moviepy==2.2.1
+opencv-python-headless==4.14.0.94
