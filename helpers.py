@@ -61,7 +61,7 @@ def select_training_device() -> torch.device:
 
 def linear_schedule(initial_value: float):
     def func(progress_remaining: float) -> float:
-        return progress_remaining * initial_value
+        return max(progress_remaining, 0.0) * initial_value
 
     return func
 
