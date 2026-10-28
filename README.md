@@ -213,10 +213,3 @@ files are removed first so a fresh run cannot inherit an old best. Reuse
   `sync_envs_normalization` asserts matching wrapper stacks.
 - **`is_dead` is unverified.** It assumes the lives counter reads -1 on the final
   death frame.
-
-`version.yaml` is bumped by CI on every push to `main`.
-
-## License
-
-MIT, see [LICENSE](LICENSE). The licence covers this code only; the game ROM is
-not distributed with it.
