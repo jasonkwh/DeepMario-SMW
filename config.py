@@ -66,4 +66,5 @@ EVAL_EVERY = 250_000
 EVAL_N_ENVS = 4  # Parallel processes for evaluation; use 2 on a 4-core machine
 N_EVAL_EPISODES = 10  # Number of episodes to run during each evaluation
 N_EVAL_EPISODES_FINAL = 20  # Number of episodes to run during the final evaluation
+EVAL_DETERMINISTIC = False
 CHECKPOINT_EVERY = 50_000  # Save a checkpoint every 50,000 training timesteps

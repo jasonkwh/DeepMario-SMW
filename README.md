@@ -172,6 +172,10 @@ gets further:
 - `eval/mean_max_x` - mean furthest x per episode
 - `eval/clear_rate` - share of episodes that clear the level
 
+Evaluation samples actions (`EVAL_DETERMINISTIC = False` in `config.py`) so the
+episodes are independent: stable-retro resets to the same savestate and ignores
+seeds, so a deterministic policy would repeat one trajectory ten times.
+
 The final evaluation prints reward, max_x, clear rate and episode length, and
 records them as `final/*`.
 

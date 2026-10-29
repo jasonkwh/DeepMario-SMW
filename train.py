@@ -46,6 +46,7 @@ from config import (
     CHECKPOINT_EVERY,
     SEED,
     N_EVAL_EPISODES_FINAL,
+    EVAL_DETERMINISTIC,
     TARGET_KL,
     N_EPOCHS,
     GAMMA,
@@ -63,7 +64,7 @@ def final_evaluation(model, eval_env, step: int):
         model,
         eval_env,
         n_eval_episodes=N_EVAL_EPISODES_FINAL,
-        deterministic=True,
+        deterministic=EVAL_DETERMINISTIC,
     )
     print(
         f"Final evaluation: reward {metrics['mean_reward']:.2f} "
@@ -231,7 +232,7 @@ def main():
                         log_path=BEST_MODEL_SAVE_DIR,
                         eval_freq=max(EVAL_EVERY // N_ENVS, 1),
                         n_eval_episodes=N_EVAL_EPISODES,
-                        deterministic=True,
+                        deterministic=EVAL_DETERMINISTIC,
                         verbose=2,
                         render=False,
                         callback_on_new_best=CallbackList(
