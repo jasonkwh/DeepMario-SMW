@@ -155,10 +155,14 @@ Values are pre-normalisation; `VecNormalize` normalises and clips them.
 | Lost a power-up            | -0.1                         |
 | Star                       | +0.3                         |
 | Timer per step             | -0.00025 (doubles below 100) |
-| Progress per pixel of x    | +0.005                       |
+| Progress per pixel of x    | +0.1                         |
 
 Rules run in a fixed order: termination rules first, then shaping (see
 `wrappers/reward.py`). The first termination rule that triggers ends the episode.
+
+The return is the sum of the rules only. stable-retro's own reward (10x the score
+delta, per `scenario.json`) is logged as `reward/base` for diagnostics and is not
+part of the return, so score cannot outweigh distance.
 
 ## Evaluation
 

@@ -53,6 +53,7 @@ class RewardWrapper(gym.Wrapper):
         cur_state = RewardState.from_info(info)
         metrics = self.metric_defaults.copy()
         info["reward/base"] = reward
+        reward = 0.0
         info["timer"] = cur_state.timer
 
         if self.prev_state is None:

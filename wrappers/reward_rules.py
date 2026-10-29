@@ -132,7 +132,7 @@ class ProgressRule(RewardRule):
 
         if progress_delta > 0.0:
             self.max_progress = cur_progress
-            return 0.005 * progress_delta, False
+            return 0.1 * progress_delta, False
 
         return 0.0, False
 
