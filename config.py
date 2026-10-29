@@ -27,7 +27,7 @@ if _N_ENVS_OVERRIDE:
 else:
     N_ENVS = max(1, len(os.sched_getaffinity(0)))  # usable cores
 
-FRAME_STACK = 8
+FRAME_STACK = 4
 RUN_NAME = f"{ENCODER.value}-{FRAME_STACK}"
 MODEL_NAME = f"mario_ppo_{RUN_NAME}"
 TB_LOG_NAME = os.environ.get("TB_LOG_NAME", RUN_NAME)
