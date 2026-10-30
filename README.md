@@ -214,10 +214,12 @@ files are removed first so a fresh run cannot inherit an old best. Reuse
 
 ## Known limitations
 
-- **Evaluation is deterministic.** stable-retro restores the savestate on reset,
-  RNG included, so a deterministic policy replays the same trajectory every
-  episode: episodes add no variance and `clear_rate` is effectively 0 or 1.
-  Fixing it needs a randomised start or a single-episode evaluation.
+- **Episodes always start from the same savestate.** stable-retro restores the
+  savestate on reset, RNG included, so every episode opens identically; the eval
+  env also runs without augmentation. The only variance comes from stochastic
+  action sampling (`EVAL_DETERMINISTIC = False`). With `deterministic=True` the
+  `N_EVAL_EPISODES` runs collapse into one sample and `clear_rate` is effectively
+  0 or 1. Randomising the start is the real fix and is not implemented.
 - **No upward actions.** `UP` combos are commented out, so no swimming up and no
   dismounting Yoshi. Acceptable on this stage, required later.
 - **The eval env carries a no-op `VecNormalize`.** Required, because SB3's
