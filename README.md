@@ -45,11 +45,14 @@ needs, so it runs before every training start.
 | `make tensorboard`    | Serve `mario_logs/tensorboard/`              |
 | `make clean`          | Delete checkpoints, best model, videos, logs |
 | `make install`        | Requirements + game data                     |
+| `make venv`           | Create `.venv` with system site packages     |
 
 ```bash
 make train ENCODER=cnn                     # output paths follow the encoder
 make train TB_LOG_NAME=t4-aug              # separate TensorBoard run
 make bench ENCODER=cnn N_ENVS=2 BENCH_SECONDS=30   # smaller machines
+eval "$(make -s venv-on)"                  # activate .venv in this shell
+eval "$(make -s venv-off)"                 # leave it again
 ```
 
 `ram` and `cnn-yolo` raise as soon as the encoder is built, before any
@@ -120,7 +123,8 @@ The eval branch is the same stack with augmentation off, in `EVAL_N_ENVS` proces
 environment with it when the best model improves.
 
 One observation is `(4, 84, 96)` - grayscale frame plus 3 action planes - and
-`VecFrameStack` makes it `(16, 84, 96)`. Action indices in those planes are scaled to
+`VecFrameStack` stacks `FRAME_STACK` of them, so the policy sees 32 channels at the
+current `FRAME_STACK = 8`. Action indices in those planes are scaled to
 0-255 so the observation stays uint8 and stock `CnnPolicy` needs no custom extractor.
 
 ## Encoders
@@ -180,7 +184,8 @@ episodes are independent: stable-retro resets to the same savestate and ignores
 seeds, so a deterministic policy would repeat one trajectory ten times.
 
 The final evaluation prints reward, max_x, clear rate and episode length, and
-records them as `final/*`.
+records them as `final/*`. It runs on the best model when one exists rather than
+the last checkpoint, and the points land on the training-end step.
 
 ## Benchmark
 
@@ -194,9 +199,9 @@ forward latency on CPU/GPU. `--no-augment` isolates the randomisation cost.
 
 ## Outputs
 
-- `mario_checkpoints/mario_ppo_<encoder>_<steps>_steps.zip` + `mario_ppo_<encoder>_vecnormalize_<steps>_steps.pkl`
-- `mario_best_model/<encoder>/best_model.zip` + its VecNormalize stats
-- `mario_logs/monitor_<encoder>-<rank>.csv`, `monitor_evaluation_<encoder>-<rank>.csv`
+- `mario_checkpoints/mario_ppo_<encoder>-<frame stack>_<steps>_steps.zip` + `mario_ppo_<encoder>-<frame stack>_vecnormalize_<steps>_steps.pkl`
+- `mario_best_model/<encoder>-<frame stack>/best_model.zip` + its VecNormalize stats
+- `mario_logs/monitor_<encoder>-<frame stack>-<rank>.monitor.csv`, `monitor_evaluation_<encoder>-<frame stack>-<rank>.monitor.csv`
 - `mario_videos/` - written on every new best model
 - `mario_logs/tensorboard/<TB_LOG_NAME>/`
 

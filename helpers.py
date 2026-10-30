@@ -32,9 +32,7 @@ def build_vec_env(
                 GAME_NAME,
                 STATE_NAME,
                 monitor_filename=(
-                    monitor_filename.replace(".csv", f"-{rank}.csv")
-                    if monitor_filename
-                    else None
+                    f"{monitor_filename}-{rank}" if monitor_filename else None
                 ),
                 augment=augment,
                 seed=SEED + seed_offset + rank,

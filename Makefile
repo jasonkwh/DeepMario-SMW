@@ -2,26 +2,39 @@ ENCODER ?= cnn
 TB_LOG_NAME ?= $(ENCODER)
 N_ENVS ?=
 BENCH_SECONDS ?= 60
+VENV ?= .venv
+PYTHON ?= $(shell test -x $(VENV)/bin/python && echo $(VENV)/bin/python || echo python)
 
-.PHONY: default install setup train bench check clean tensorboard
+.PHONY: default venv venv-on venv-off install setup train bench check clean tensorboard
 
 default: train
 
+venv:
+	@test -x $(VENV)/bin/python || python3 -m venv --system-site-packages $(VENV)
+	@echo "venv ready: $(VENV) -> $(PYTHON)"
+
+venv-on:
+	@test -x $(VENV)/bin/python || $(MAKE) --no-print-directory venv
+	@echo 'test -n "$$VIRTUAL_ENV" || . $(VENV)/bin/activate'
+
+venv-off:
+	@echo 'deactivate 2>/dev/null || true'
+
 install:
-	python -m pip install -r requirements.txt
+	$(PYTHON) -m pip install -r requirements.txt
 	$(MAKE) setup
 
 setup:
-	python setup.py
+	$(PYTHON) setup.py
 
 train: setup
-	N_ENVS=$(N_ENVS) ENCODER=$(ENCODER) TB_LOG_NAME=$(TB_LOG_NAME) python train.py
+	N_ENVS=$(N_ENVS) ENCODER=$(ENCODER) TB_LOG_NAME=$(TB_LOG_NAME) $(PYTHON) train.py
 
 bench:
-	N_ENVS=$(N_ENVS) ENCODER=$(ENCODER) python tools/bench_env.py --seconds $(BENCH_SECONDS)
+	N_ENVS=$(N_ENVS) ENCODER=$(ENCODER) $(PYTHON) tools/bench_env.py --seconds $(BENCH_SECONDS)
 
 check:
-	python tools/check_invariants.py
+	$(PYTHON) tools/check_invariants.py
 
 clean:
 	rm -rf mario_checkpoints/ mario_best_model/ mario_videos/ mario_logs/

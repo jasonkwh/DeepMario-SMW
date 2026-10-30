@@ -37,8 +37,8 @@ BEST_MODEL_SAVE_DIR = f"./mario_best_model/{RUN_NAME}/"
 VIDEO_DIR = "./mario_videos/"
 LOG_DIR = "./mario_logs/"
 TENSORBOARD_LOG_DIR = f"{LOG_DIR}tensorboard/"
-MONITOR_FILENAME = f"{LOG_DIR}monitor_{RUN_NAME}.csv"
-MONITOR_EVALUATION_FILENAME = f"{LOG_DIR}monitor_evaluation_{RUN_NAME}.csv"
+MONITOR_FILENAME = f"{LOG_DIR}monitor_{RUN_NAME}"
+MONITOR_EVALUATION_FILENAME = f"{LOG_DIR}monitor_evaluation_{RUN_NAME}"
 RESUME_FROM = "latest"  # or "best" or "none"
 
 # Training parameters
