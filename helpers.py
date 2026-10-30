@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import torch
+from stable_baselines3 import PPO
 from stable_baselines3.common.vec_env import SubprocVecEnv
 
 from encoders import build_encoder
@@ -105,3 +106,17 @@ def get_latest_checkpoint_path() -> Path | None:
 def get_best_model_path() -> Path | None:
     path = Path(BEST_MODEL_SAVE_DIR) / "best_model.zip"
     return path if path.exists() else None
+
+
+def get_model_to_save(model, device):
+    best_model_path = get_best_model_path()
+
+    if best_model_path is not None:
+        best_model = PPO.load(best_model_path, device=device)
+        print("Using the best model selected during training for final evaluation.")
+        return best_model
+    else:
+        print(
+            "No evaluated best model was created. Using the last trained model for final evaluation."
+        )
+        return model

@@ -7,13 +7,13 @@ from stable_baselines3.common.callbacks import (
     CheckpointCallback,
 )
 from encoders import build_policy
-from evaluation import evaluate_level_metrics
+from evaluation import final_evaluation
 from helpers import (
     build_vec_env,
     configure_torch_threads,
     select_training_device,
-    get_best_model_path,
     get_checkpoint_path,
+    get_model_to_save,
     get_vecnormalize_path,
     linear_schedule,
     remove_best_model_artifacts,
@@ -45,7 +45,6 @@ from config import (
     N_EVAL_EPISODES,
     CHECKPOINT_EVERY,
     SEED,
-    N_EVAL_EPISODES_FINAL,
     EVAL_DETERMINISTIC,
     TARGET_KL,
     N_EPOCHS,
@@ -57,53 +56,6 @@ from config import (
     CLIP_REWARD,
     VIDEO_EVERY_N_BEST,
 )
-
-
-def final_evaluation(model, eval_env, step: int):
-    metrics = evaluate_level_metrics(
-        model,
-        eval_env,
-        n_eval_episodes=N_EVAL_EPISODES_FINAL,
-        deterministic=EVAL_DETERMINISTIC,
-    )
-    print(
-        f"Final evaluation: reward {metrics['mean_reward']:.2f} "
-        f"+/- {metrics['std_reward']:.2f} over {metrics['n_episodes']} episodes"
-    )
-    print(
-        f"  max_x   mean {metrics['mean_max_x']:.1f} | best {metrics['best_max_x']:.1f}"
-    )
-    print(
-        f"  cleared {metrics['clear_rate'] * 100:.0f}% "
-        f"({metrics['cleared_episodes']}/{metrics['n_episodes']}) "
-        f"| mean episode length {metrics['mean_length']:.0f} steps"
-    )
-
-    logger = getattr(model, "logger", None)
-    if logger is not None:
-        try:
-            logger.record("final/mean_reward", metrics["mean_reward"])
-            logger.record("final/mean_max_x", metrics["mean_max_x"])
-            logger.record("final/clear_rate", metrics["clear_rate"])
-            logger.dump(step)
-        except Exception:
-            pass
-
-    return metrics
-
-
-def get_model_to_save(model, device):
-    best_model_path = get_best_model_path()
-
-    if best_model_path is not None:
-        best_model = PPO.load(best_model_path, device=device)
-        print("Using the best model selected during training for final evaluation.")
-        return best_model
-    else:
-        print(
-            "No evaluated best model was created. Using the last trained model for final evaluation."
-        )
-        return model
 
 
 def main():
@@ -253,7 +205,12 @@ def main():
 
         # Evaluate and save the same policy: the best checkpoint when available.
         final_model = get_model_to_save(model, device)
-        final_evaluation(final_model, eval_env, step=model.num_timesteps)
+        final_evaluation(
+            final_model,
+            eval_env,
+            logger=getattr(model, "logger", None),
+            step=model.num_timesteps,
+        )
 
         # save the final model
         final_model.save(MODEL_NAME)

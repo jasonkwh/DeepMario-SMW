@@ -1,5 +1,7 @@
 import numpy as np
 
+from config import EVAL_DETERMINISTIC, N_EVAL_EPISODES_FINAL
+
 CLEARED_KEY = "termination/Completion"
 
 
@@ -85,3 +87,34 @@ def evaluate_level_metrics(
         "cleared_episodes": int(np.sum(episode_cleared)),
         "mean_length": float(np.mean(episode_lengths)),
     }
+
+
+def final_evaluation(model, eval_env, logger, step: int):
+    metrics = evaluate_level_metrics(
+        model,
+        eval_env,
+        n_eval_episodes=N_EVAL_EPISODES_FINAL,
+        deterministic=EVAL_DETERMINISTIC,
+    )
+    print(
+        f"Final evaluation: reward {metrics['mean_reward']:.2f} "
+        f"+/- {metrics['std_reward']:.2f} over {metrics['n_episodes']} episodes"
+    )
+    print(
+        f"  max_x   mean {metrics['mean_max_x']:.1f} | best {metrics['best_max_x']:.1f}"
+    )
+    print(
+        f"  cleared {metrics['clear_rate'] * 100:.0f}% "
+        f"({metrics['cleared_episodes']}/{metrics['n_episodes']}) "
+        f"| mean episode length {metrics['mean_length']:.0f} steps"
+    )
+
+    if logger is None:
+        print("No logger available: final metrics were not written to TensorBoard.")
+    else:
+        logger.record("final/mean_reward", metrics["mean_reward"])
+        logger.record("final/mean_max_x", metrics["mean_max_x"])
+        logger.record("final/clear_rate", metrics["clear_rate"])
+        logger.dump(step)
+
+    return metrics
