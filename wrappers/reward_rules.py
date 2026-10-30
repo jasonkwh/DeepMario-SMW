@@ -47,16 +47,32 @@ class TimeUpPenaltyRule(RewardRule):
 
 
 class LifeLostPenaltyRule(RewardRule):
+    def __init__(self):
+        self._metrics: dict[str, float] = {}
+
+    def reset(self, prev_state: RewardState | None = None) -> None:
+        self._metrics = {}
+
     def apply(
         self,
         prev_state: RewardState,
         cur_state: RewardState,
     ) -> tuple[float, bool]:
+        self._metrics = {}
+
         if prev_state.is_lost_life(cur_state):
+            self._metrics = {
+                "life_lost/x": float(cur_state.x),
+                "life_lost/lives": float(cur_state.lives),
+            }
+
             if prev_state.is_dead(cur_state):
                 return -20.0, True
             return -5.0, False
         return 0.0, False
+
+    def get_metrics(self) -> dict[str, float]:
+        return self._metrics
 
 
 class ScoreEventRule(RewardRule):

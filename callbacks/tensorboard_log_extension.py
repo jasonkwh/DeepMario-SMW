@@ -18,7 +18,7 @@ class TensorboardLogExtensionCallback(BaseCallback):
                     self.logger.record(f"env_{env_index}/state/{key}", float(value))
                     self.logger.record_mean(f"state/{key}", float(value))
 
-                elif key.startswith("reward/") or key.startswith("termination/"):
+                elif key.startswith(("reward/", "termination/", "life_lost/")):
                     self.logger.record(f"env_{env_index}/{key}", float(value))
                     self.logger.record_mean(key, float(value))
 
