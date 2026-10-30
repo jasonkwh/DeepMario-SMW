@@ -27,7 +27,7 @@ if _N_ENVS_OVERRIDE:
 else:
     N_ENVS = max(1, len(os.sched_getaffinity(0)))  # usable cores
 
-FRAME_STACK = 4
+FRAME_STACK = 8
 RUN_NAME = f"{ENCODER.value}-{FRAME_STACK}"
 MODEL_NAME = f"mario_ppo_{RUN_NAME}"
 TB_LOG_NAME = os.environ.get("TB_LOG_NAME", RUN_NAME)
@@ -61,7 +61,7 @@ CLIP_REWARD = 10.0  # Limit normalized reward magnitude
 CLIP_RANGE = 0.2  # PPO surrogate clip range
 VF_COEF = 0.5  # Value function loss coefficient
 MAX_GRAD_NORM = 0.5  # Prevents exploding gradients
-TOTAL_TIMESTEPS = 5_000_000
+TOTAL_TIMESTEPS = 2_000_000
 EVAL_EVERY = 250_000
 EVAL_N_ENVS = 4  # Parallel processes for evaluation; use 2 on a 4-core machine
 N_EVAL_EPISODES = 20  # Number of episodes to run during each evaluation
