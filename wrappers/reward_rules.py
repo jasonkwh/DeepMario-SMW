@@ -83,8 +83,8 @@ class ScoreEventRule(RewardRule):
     ) -> tuple[float, bool]:
         if prev_state.has_increased_score(cur_state):
             if prev_state.has_collected_coin(cur_state):
-                return 0.2, False
-            return 0.05, False
+                return 1.0, False
+            return 0.5, False
         return 0.0, False
 
 
