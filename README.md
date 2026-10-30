@@ -149,8 +149,8 @@ Values are pre-normalisation; `VecNormalize` normalises and clips them.
 | Level completed            | +100                         |
 | Time ran out               | -10                          |
 | Lost a life / last life    | -5 / -20                     |
-| Coin                       | +0.2                         |
-| Other score increase       | +0.05                        |
+| Coin                       | +1.0                         |
+| Other score increase       | +0.5                         |
 | Power-up big / cape / fire | +0.1 / +0.2 / +0.2           |
 | Lost a power-up            | -0.1                         |
 | Star                       | +0.3                         |
@@ -163,6 +163,9 @@ Rules run in a fixed order: termination rules first, then shaping (see
 The return is the sum of the rules only. stable-retro's own reward (10x the score
 delta, per `scenario.json`) is logged as `reward/base` for diagnostics and is not
 part of the return, so score cannot outweigh distance.
+
+Every life lost is logged as `life_lost/x` and `life_lost/lives`, recorded only on
+the step it happens (`lives` is `-1` on the last one).
 
 ## Evaluation
 
