@@ -21,7 +21,12 @@ def setup_game():
     print(f"Updating {data_path}")
 
     data = json.loads(data_path.read_text())
-    data["info"].update(ANCHORS)
+    data["info"].update(
+        {
+            name: {"address": spec["address"], "type": spec["type"]}
+            for name, spec in ANCHORS.items()
+        }
+    )
 
     data_path.write_text(json.dumps(data, indent=2) + "\n")
 
