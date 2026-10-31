@@ -88,15 +88,15 @@ class LifeLostPenaltyRule(RewardRule):
 class ScoreEventRule(RewardRule):
     COIN_REWARD = 10.0
     OTHER_REWARD = 5.0
-    OTHER_CAP = 50.0
+    OTHER_BUCKET_PX = 32
     metric_keys = ("reward/score_event/coin", "reward/score_event/other")
 
     def __init__(self):
-        self._other_paid = 0.0
+        self._paid_buckets: set[int] = set()
         self._metrics: dict[str, float] = {}
 
     def reset(self, prev_state: RewardState | None = None) -> None:
-        self._other_paid = 0.0
+        self._paid_buckets = set()
         self._metrics = {}
 
     def apply(
@@ -113,11 +113,12 @@ class ScoreEventRule(RewardRule):
             self._metrics = {"reward/score_event/coin": self.COIN_REWARD}
             return self.COIN_REWARD, False
 
-        reward_delta = max(
-            0.0, min(self.OTHER_REWARD, self.OTHER_CAP - self._other_paid)
-        )
-        if reward_delta > 0.0:
-            self._other_paid += reward_delta
+        bucket = cur_state.x // self.OTHER_BUCKET_PX
+        reward_delta = 0.0
+        if bucket not in self._paid_buckets:
+            self._paid_buckets.add(bucket)
+            reward_delta = self.OTHER_REWARD
+
         self._metrics = {"reward/score_event/other": reward_delta}
 
         return reward_delta, False

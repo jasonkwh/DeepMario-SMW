@@ -153,7 +153,7 @@ Values are pre-normalisation; `VecNormalize` normalises and clips them.
 | Time ran out               | -10                          |
 | Lost a life / last life    | -5 / -20                     |
 | Coin                       | +10.0                        |
-| Other score increase       | +5.0 (capped at +50 per episode) |
+| Other score increase       | +5.0 (once per 32 px of x)   |
 | Power-up big / cape / fire | +0.1 / +0.2 / +0.2           |
 | Lost a power-up            | -0.1                         |
 | Star                       | +0.3                         |
