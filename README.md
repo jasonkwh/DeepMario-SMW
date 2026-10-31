@@ -15,9 +15,10 @@ One policy is meant to clear the whole game; `Yoshi's Island 1` is just the stag
 it learns first, picked by `STATE_NAME` in `config.py`.
 
 Perception is pluggable (`ENCODER`): `cnn` reads stacked 84x96 grayscale frames,
-`ram` and `cnn-yolo` are planned. Everything downstream - reward, wrappers,
-evaluation, the training loop - is shared, so the three stay comparable. The
-action space is 19 discrete button combinations.
+`ram` reads 16 anchored memory fields into an MLP, and `cnn-yolo` is planned.
+Everything downstream - reward, wrappers, evaluation, the training loop - is
+shared, so the three stay comparable. The action space is 19 discrete button
+combinations.
 
 ## Install
 
@@ -67,7 +68,7 @@ separate because evaluation pipelines on top of the training envs. The valid
 encoders are the `EncoderType` enum in `encoders/encoder.py`.
 
 `config.py` must stay importable without heavy dependencies: `encoders/__init__.py`
-resolves `CnnEncoder` and `build_encoder` lazily, and `make check` fails if
+resolves `CNNEncoder` and `build_encoder` lazily, and `make check` fails if
 importing `config` pulls in torch.
 
 ## Architecture
@@ -89,7 +90,7 @@ flowchart TD
   subgraph P["perception"]
     direction LR
     CNN["cnn<br/>pixels"]
-    RAM["ram<br/>planned"]
+    RAM["ram<br/>16 RAM fields"]
     YOLO["cnn-yolo<br/>planned"]
   end
   REW["reward<br/>rules + progress estimate"]
@@ -100,8 +101,8 @@ flowchart TD
   REW --> PPO
   classDef live fill:#dbe9f7,stroke:#3f6fa8,color:#12314f
   classDef todo fill:#f5f6f7,stroke:#98a2ad,stroke-dasharray: 4 3,color:#4a5560
-  class CNN,REW,PPO live
-  class RAM,YOLO todo
+  class CNN,RAM,REW,PPO live
+  class YOLO todo
   style P fill:#fff8ef,stroke:#b5762a
 ```
 
@@ -138,7 +139,7 @@ enum to an encoder; unimplemented ones raise instead of silently falling back.
 | `ENCODER`  | State       |                                                                                           |
 | ---------- | ----------- | ----------------------------------------------------------------------------------------- |
 | `cnn`      | implemented | Stock `NatureCNN`: conv 32x8x8/4, 64x4x4/2, 64x3x3/1, flatten, linear 512, then PPO heads |
-| `ram`      | planned     | RAM fields (position, sprite slots, tiles) straight to an MLP                             |
+| `ram`      | implemented | 16 anchored WRAM fields (position, speed, camera, flags, timer) straight to an MLP        |
 | `cnn-yolo` | planned     | Pixel stream plus a detection stream                                                      |
 
 The `cnn` encoder deliberately adds nothing on top of `NatureCNN` - it is the

@@ -3,19 +3,24 @@ from typing import Any
 from .encoder import Encoder, EncoderType
 
 __all__ = [
-    "CnnEncoder",
+    "CNNEncoder",
     "Encoder",
     "EncoderType",
+    "RAMEncoder",
     "build_encoder",
     "build_policy",
 ]
 
 
 def __getattr__(name: str) -> Any:
-    if name == "CnnEncoder":
-        from .cnn import CnnEncoder
+    if name == "CNNEncoder":
+        from .cnn import CNNEncoder
 
-        return CnnEncoder
+        return CNNEncoder
+    if name == "RAMEncoder":
+        from .ram import RAMEncoder
+
+        return RAMEncoder
     if name == "build_encoder":
         from .factory import build_encoder
 

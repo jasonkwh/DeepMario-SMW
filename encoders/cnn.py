@@ -11,7 +11,7 @@ from .encoder import Encoder
 FEATURES_DIM = 512
 
 
-class CnnEncoder(Encoder):
+class CNNEncoder(Encoder):
     def __init__(self, observation_space=None):
         super().__init__(observation_space)
 
@@ -42,4 +42,4 @@ class CnnEncoder(Encoder):
 
 
 def build_policy() -> tuple[str, dict]:
-    return CnnEncoder().build_policy()
+    return CNNEncoder().build_policy()

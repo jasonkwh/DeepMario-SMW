@@ -28,7 +28,9 @@ else:
     N_ENVS = max(1, len(os.sched_getaffinity(0)))  # usable cores
 
 FRAME_STACK = 4
-RUN_NAME = f"{ENCODER.value}-{FRAME_STACK}"
+RUN_NAME = (
+    ENCODER.value if ENCODER is EncoderType.RAM else f"{ENCODER.value}-{FRAME_STACK}"
+)
 MODEL_NAME = f"mario_ppo_{RUN_NAME}"
 TB_LOG_NAME = os.environ.get("TB_LOG_NAME", RUN_NAME)
 GAME_FPS = 60
