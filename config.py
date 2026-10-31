@@ -5,7 +5,7 @@ from encoders.encoder import EncoderType
 SEED = 40
 TORCH_NUM_THREADS = 2
 GAME_NAME = "SuperMarioWorld-Snes-v0"
-STATE_NAME = "YoshiIsland1"
+STATE_NAME = "YoshiIsland2"
 
 _ENCODER_NAME = os.environ.get("ENCODER", EncoderType.CNN.value)
 try:

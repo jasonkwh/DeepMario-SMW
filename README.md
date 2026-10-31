@@ -11,8 +11,8 @@
 
 ---
 
-One policy is meant to clear the whole game; `Yoshi's Island 1` is just the stage
-it learns first, picked by `STATE_NAME` in `config.py`.
+One policy is meant to clear the whole game. `Yoshi's Island 1` is cleared - a clear
+rate of 0.95-1.00 after 5M steps - and training has moved on to `Yoshi's Island 2`.
 
 Perception is pluggable (`ENCODER`): `cnn` reads stacked 84x96 grayscale frames,
 and `cnn-yolo` is planned.
@@ -86,7 +86,7 @@ the encoder's skip wrapper, which sums it over `FRAME_SKIP` frames.
 
 ```mermaid
 flowchart TD
-  ENV["SuperMarioWorld-Snes-v0<br/>YoshiIsland1"]
+  ENV["SuperMarioWorld-Snes-v0<br/>YoshiIsland2"]
   subgraph P["perception"]
     direction LR
     CNN["cnn<br/>pixels"]
