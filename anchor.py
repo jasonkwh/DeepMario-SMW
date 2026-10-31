@@ -81,6 +81,20 @@ ANCHORS: dict[str, RAMAnchor] = {
         "address": WRAM_BASE + 0xF33,
         "type": "<u1",
     },
+    # counters
+    # lives is signed: -1 means the death animation has taken over
+    "lives": {
+        "address": WRAM_BASE + 0xDBE,
+        "type": "<i1",
+    },
+    "coins": {
+        "address": WRAM_BASE + 0xDBF,
+        "type": "<u1",
+    },
+    "score": {
+        "address": WRAM_BASE + 0xF34,
+        "type": "<u4",
+    },
     # completion
     "level_end_timer": {
         "address": WRAM_BASE + 0x1493,
