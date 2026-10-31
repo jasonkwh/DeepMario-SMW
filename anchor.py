@@ -62,6 +62,11 @@ ANCHORS: dict[str, RAMAnchor] = {
         "type": "|u1",
         "obs": "flag",
     },
+    "ducking": {
+        "address": WRAM_BASE + 0x73,
+        "type": "|u1",
+        "obs": "flag",
+    },
     "carrying": {
         "address": WRAM_BASE + 0x1470,
         "type": "|u1",

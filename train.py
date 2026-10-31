@@ -6,7 +6,7 @@ from stable_baselines3.common.callbacks import (
     CallbackList,
     CheckpointCallback,
 )
-from encoders import build_policy
+from encoders import EncoderType, build_policy
 from evaluation import final_evaluation
 from helpers import (
     build_vec_env,
@@ -87,7 +87,7 @@ def main():
 
         env = build_vec_env(
             N_ENVS,
-            augment=True,
+            augment=ENCODER is EncoderType.CNN,
             monitor_filename=MONITOR_FILENAME,
         )
 

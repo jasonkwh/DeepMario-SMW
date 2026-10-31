@@ -65,7 +65,9 @@ class ObservationAugmentation(gym.ObservationWrapper):
         return image
 
     @staticmethod
-    def _translate(image: np.ndarray, rng: np.random.Generator, max_shift: int) -> np.ndarray:
+    def _translate(
+        image: np.ndarray, rng: np.random.Generator, max_shift: int
+    ) -> np.ndarray:
         dy = int(rng.integers(-max_shift, max_shift + 1))
         dx = int(rng.integers(-max_shift, max_shift + 1))
         if dy == 0 and dx == 0:

@@ -4,9 +4,9 @@ from stable_baselines3.common.torch_layers import NatureCNN
 from stable_baselines3.common.vec_env import VecFrameStack, VecTransposeImage
 
 from config import OBSERVATION_SHAPE, FRAME_SKIP, FRAME_STACK
-from wrappers import ActionHistory, ObservationAugmentation
-
+from .action_history import ActionHistory
 from .encoder import Encoder
+from .randomization import ObservationAugmentation
 
 FEATURES_DIM = 512
 
