@@ -51,8 +51,8 @@ needs, so it runs before every training start.
 make train ENCODER=cnn                     # output paths follow the encoder
 make train TB_LOG_NAME=t4-aug              # separate TensorBoard run
 make bench ENCODER=cnn N_ENVS=2 BENCH_SECONDS=30   # smaller machines
-eval "$(make -s venv-on)"                  # activate .venv in this shell
-eval "$(make -s venv-off)"                 # leave it again
+source .venv/bin/activate                # enter .venv in this shell
+deactivate                               # leave it again
 ```
 
 `ram` and `cnn-yolo` raise as soon as the encoder is built, before any

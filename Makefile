@@ -5,20 +5,13 @@ BENCH_SECONDS ?= 60
 VENV ?= .venv
 PYTHON ?= $(shell test -x $(VENV)/bin/python && echo $(VENV)/bin/python || echo python)
 
-.PHONY: default venv venv-on venv-off install setup train bench check clean tensorboard
+.PHONY: default venv install setup train bench check clean tensorboard
 
 default: train
 
 venv:
 	@test -x $(VENV)/bin/python || python3 -m venv --system-site-packages $(VENV)
 	@echo "venv ready: $(VENV) -> $(PYTHON)"
-
-venv-on:
-	@test -x $(VENV)/bin/python || $(MAKE) --no-print-directory venv
-	@echo 'test -n "$$VIRTUAL_ENV" || . $(VENV)/bin/activate'
-
-venv-off:
-	@echo 'deactivate 2>/dev/null || true'
 
 install:
 	$(PYTHON) -m pip install -r requirements.txt
