@@ -24,7 +24,7 @@ ANCHORS: dict[str, RAMAnchor] = {
     "layer1_x": {
         "address": WRAM_BASE + 0x1462,
         "type": "<u2",
-        "obs": 4096.0,
+        "obs": None,
     },
     "x_speed": {
         "address": WRAM_BASE + 0x7B,
@@ -60,22 +60,42 @@ ANCHORS: dict[str, RAMAnchor] = {
     "climbing": {
         "address": WRAM_BASE + 0x74,
         "type": "|u1",
-        "obs": "flag",
+        "obs": None,
     },
     "ducking": {
         "address": WRAM_BASE + 0x73,
         "type": "|u1",
         "obs": "flag",
     },
+    # $7E:0072: 0 on ground, 11 jump, 12 P-speed takeoff, 36 falling.
+    # Airborne flag only; y_speed already carries rising vs falling.
+    "player_in_air": {
+        "address": WRAM_BASE + 0x72,
+        "type": "|u1",
+        "obs": "flag",
+    },
+    # $7E:13E4 P-meter: #$70 means max run speed and cape flight available.
+    "pmeter": {
+        "address": WRAM_BASE + 0x13E4,
+        "type": "|u1",
+        "obs": None,
+    },
+    # $7E:0071 non-zero: an animation is eating player input (pipe, death,
+    # powerup, door, cutscene). Binary on purpose, the 14 codes are not ordinal.
+    "input_blocked": {
+        "address": WRAM_BASE + 0x71,
+        "type": "|u1",
+        "obs": "flag",
+    },
     "carrying": {
         "address": WRAM_BASE + 0x1470,
         "type": "|u1",
-        "obs": "flag",
+        "obs": None,
     },
     "flash_timer": {
         "address": WRAM_BASE + 0x1497,
         "type": "|u1",
-        "obs": 255.0,
+        "obs": None,
     },
     # powerup
     # valid values:
@@ -91,7 +111,7 @@ ANCHORS: dict[str, RAMAnchor] = {
     "item": {
         "address": WRAM_BASE + 0xDC2,
         "type": "|u1",
-        "obs": 4.0,
+        "obs": None,
     },
     # timer
     "timer_hundreds": {
@@ -130,12 +150,12 @@ ANCHORS: dict[str, RAMAnchor] = {
     "level_end_timer": {
         "address": WRAM_BASE + 0x1493,
         "type": "|u1",
-        "obs": 255.0,
+        "obs": None,
     },
     # star timer
     "star_timer": {
         "address": WRAM_BASE + 0x1490,
         "type": "|u1",
-        "obs": 255.0,
+        "obs": None,
     },
 }

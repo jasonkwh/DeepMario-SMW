@@ -8,56 +8,55 @@ OBSERVATION_HIGH = 16.0
 TIMER_PARTS = (("hundreds", 100), ("tens", 10), ("ones", 1))
 
 
-def _raw(ram, name, spec, offsets):
+def _raw(ram, anchor, offsets):
+    spec = ANCHORS[anchor]
     size = np.dtype(spec["type"]).itemsize
-    start = offsets[name]
+    start = offsets[anchor]
     return float(np.frombuffer(bytes(ram[start : start + size]), dtype=spec["type"])[0])
 
 
-def _decode(ram, name, spec, offsets):
-    obs = spec["obs"]
-    if obs is None:
-        return ()
-    if isinstance(obs, tuple):
-        kind, scale = obs
-        return (
-            sum(
-                _raw(ram, f"timer_{part}", ANCHORS[f"timer_{part}"], offsets) * weight
-                for part, weight in TIMER_PARTS
-            )
-            / scale,
-        )
-    raw = _raw(ram, name, spec, offsets)
-    if obs == "flag":
-        return (float(raw != 0.0),)
-    if isinstance(obs, dict):
-        return tuple(float(bool(int(raw) & mask)) for mask in obs.values())
-    return (raw / obs,)
-
-
-def _feature_names():
-    names = []
+def _compile():
+    """Flatten the obs specs into one entry per observation dimension."""
+    features = []
     for name, spec in ANCHORS.items():
-        if spec["obs"] is None:
-            continue
         obs = spec["obs"]
+        if obs is None:
+            continue
         if isinstance(obs, dict):
-            names.extend(f"{name}_{part}" for part in obs)
+            features.extend(
+                (f"{name}_{part}", name, "bit", mask) for part, mask in obs.items()
+            )
         elif isinstance(obs, tuple):
-            names.append(obs[0])
+            features.append(("timer", name, "timer", obs[1]))
+        elif obs == "flag":
+            features.append((name, name, "flag", None))
         else:
-            names.append(name)
-    return tuple(names)
+            features.append((name, name, "scale", obs))
+    return tuple(features)
 
 
-FEATURE_NAMES = _feature_names()
-OBSERVATION_DIM = len(FEATURE_NAMES)
+FEATURES = _compile()
+FEATURE_NAMES = tuple(feature[0] for feature in FEATURES)
+OBSERVATION_DIM = len(FEATURES)
 
 
 def build(ram, offsets):
     values = []
-    for name, spec in ANCHORS.items():
-        values.extend(_decode(ram, name, spec, offsets))
+    for _, anchor, kind, argument in FEATURES:
+        if kind == "timer":
+            total = sum(
+                _raw(ram, f"timer_{part}", offsets) * weight
+                for part, weight in TIMER_PARTS
+            )
+            values.append(total / argument)
+            continue
+        raw = _raw(ram, anchor, offsets)
+        if kind == "bit":
+            values.append(float(bool(int(raw) & argument)))
+        elif kind == "flag":
+            values.append(float(raw != 0.0))
+        else:
+            values.append(raw / argument)
     return np.array(values, dtype=np.float32)
 
 

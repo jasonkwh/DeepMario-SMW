@@ -15,7 +15,8 @@ One policy is meant to clear the whole game; `Yoshi's Island 1` is just the stag
 it learns first, picked by `STATE_NAME` in `config.py`.
 
 Perception is pluggable (`ENCODER`): `cnn` reads stacked 84x96 grayscale frames,
-`ram` reads 16 anchored memory fields into an MLP, and `cnn-yolo` is planned.
+`ram` reads a 16-dim vector decoded from 12 anchored WRAM bytes into an MLP, and
+`cnn-yolo` is planned.
 Everything downstream - reward, wrappers, evaluation, the training loop - is
 shared, so the three stay comparable. The action space is 19 discrete button
 combinations.
@@ -90,7 +91,7 @@ flowchart TD
   subgraph P["perception"]
     direction LR
     CNN["cnn<br/>pixels"]
-    RAM["ram<br/>16 RAM fields"]
+    RAM["ram<br/>16 dims, WRAM"]
     YOLO["cnn-yolo<br/>planned"]
   end
   REW["reward<br/>rules + progress estimate"]
@@ -139,7 +140,7 @@ enum to an encoder; unimplemented ones raise instead of silently falling back.
 | `ENCODER`  | State       |                                                                                           |
 | ---------- | ----------- | ----------------------------------------------------------------------------------------- |
 | `cnn`      | implemented | Stock `NatureCNN`: conv 32x8x8/4, 64x4x4/2, 64x3x3/1, flatten, linear 512, then PPO heads |
-| `ram`      | implemented | 16 anchored WRAM fields (position, speed, camera, flags, timer) straight to an MLP        |
+| `ram`      | implemented | 16 dims from 12 WRAM bytes: position, signed speed, facing, 5 collision bits, state flags, powerup, timer |
 | `cnn-yolo` | planned     | Pixel stream plus a detection stream                                                      |
 
 The `cnn` encoder deliberately adds nothing on top of `NatureCNN` - it is the
@@ -216,7 +217,17 @@ files are removed first so a fresh run cannot inherit an old best. Reuse
 `setup.py` adds these fields to `data.json`: `x`, `y` (position, drives progress),
 `powerup` (00 small, 01 big, 02 cape, 03 fire), `item` (item box), `timer_hundreds`
 / `timer_tens` / `timer_ones`, `level_end_timer` (non-zero once completion starts),
-`star_timer`. The `ram` encoder will read the same table.
+`star_timer`. `anchor.py` is the single table behind both this patch and the `ram`
+observation: each entry carries the address, the type, and an `obs` spec (a scale, a
+flag, a bitfield, or `None` when only the reward reads it).
+
+The `ram` encoder is a **control arm**, not a target: it exists to answer whether a
+failure is perceptual or comes from reward/algorithm, so its feature set is frozen at
+what is cheap and verified. Verify the anchors against the running game with
+`.venv/bin/python tools/probe_anchors.py`; it reports which anchors disagree with the
+engine and which never change. Decision rule: if `ram` cannot clear the stage either,
+the problem is not perception; if it can while `cnn` cannot, perception is the
+bottleneck.
 
 ## Known limitations
 
