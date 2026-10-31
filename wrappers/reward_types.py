@@ -7,6 +7,7 @@ class RewardState:
     coins: int
     score: int
     x: int
+    y: int
     level_end_timer: int
     timer: int
     powerup: int
@@ -19,6 +20,7 @@ class RewardState:
             coins=info.get("coins", 0),
             score=info.get("score", 0),
             x=info.get("x", 0),
+            y=info.get("y", 0),
             level_end_timer=info.get("level_end_timer", 0),
             timer=cls._get_current_time(info),
             powerup=info.get("powerup", 0),
