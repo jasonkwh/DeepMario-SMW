@@ -34,6 +34,7 @@ class RewardWrapper(gym.Wrapper):
             for key in (
                 f"reward/rules/{rule.name}",
                 f"termination/{rule.name}",
+                *rule.metric_keys,
             )
         }
 
