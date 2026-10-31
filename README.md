@@ -1,11 +1,11 @@
-<h1 align="center">DeepMario-SMW</h1>
+<h1 align="center">DeepMario-SMW-Vision</h1>
 
 <p align="center">
-  PPO on Super Mario World, with pluggable perception.
+  Learning to clear Super Mario World from pixels, end to end.
 </p>
 
 <p align="center">
-  <a href="https://github.com/jasonkwh/DeepMario-SMW/actions/workflows/check.yml"><img src="https://img.shields.io/github/actions/workflow/status/jasonkwh/DeepMario-SMW/check.yml?label=check" alt="check"></a>
+  <a href="https://github.com/jasonkwh/DeepMario-SMW-Vision/actions/workflows/check.yml"><img src="https://img.shields.io/github/actions/workflow/status/jasonkwh/DeepMario-SMW-Vision/check.yml?label=check" alt="check"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
 </p>
 
@@ -17,7 +17,7 @@ it learns first, picked by `STATE_NAME` in `config.py`.
 Perception is pluggable (`ENCODER`): `cnn` reads stacked 84x96 grayscale frames,
 and `cnn-yolo` is planned.
 Everything downstream - reward, wrappers, evaluation, the training loop - is
-shared, so the three stay comparable. The action space is 19 discrete button
+shared, so they stay comparable. The action space is 19 discrete button
 combinations.
 
 ## Install
@@ -123,8 +123,8 @@ The eval branch is the same stack with augmentation off, in `EVAL_N_ENVS` proces
 environment with it when the best model improves.
 
 One observation is `(4, 84, 96)` - grayscale frame plus 3 action planes - and
-`VecFrameStack` stacks `FRAME_STACK` of them, so the policy sees 32 channels at the
-current `FRAME_STACK = 8`. Action indices in those planes are scaled to
+`VecFrameStack` stacks `FRAME_STACK` of them, so the policy sees 16 channels at the
+current `FRAME_STACK = 4`. Action indices in those planes are scaled to
 0-255 so the observation stays uint8 and stock `CnnPolicy` needs no custom extractor.
 
 ## Encoders

@@ -2,7 +2,7 @@ MIT License
 
 Copyright (c) 2026 Jason Huang <jasonkwh@gmail.com>
 
-DeepMario-SMW - PPO on Super Mario World, with pluggable perception.
+DeepMario-SMW-Vision - Learning to clear Super Mario World from pixels, end to end.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
