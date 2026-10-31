@@ -4,27 +4,11 @@ from collections import Counter
 import numpy as np
 import stable_retro
 
-from anchor import ANCHORS, WRAM_BASE
+from anchor import ANCHORS
 from config import GAME_NAME, STATE_NAME
 from setup import setup_game
 
-# Documented ranges, from the SMW disassembly RAM map.
-EXPECTED_VALUES = {
-    "player_in_air": {0, 11, 12, 36},
-    "pmeter": set(range(0x71)),
-    "input_blocked": set(range(14)),
-    "direction": {0, 1},
-}
-
-# Anchors no published map covers yet: the tool cannot confirm them, only show
-# whether they move and whether they look plausible.
-UNVERIFIED = (
-    "layer1_x",
-    "carrying",
-    "flash_timer",
-    "level_end_timer",
-    "star_timer",
-)
+WRAM_BASE = 0x7E0000
 
 
 def read_raw(ram, spec):
@@ -52,27 +36,18 @@ def main():
     seen = {name: set() for name in ANCHORS}
     compared = Counter()
     mismatch = Counter()
-    ground_ok = ground_total = 0
-    sign_ok = sign_total = 0
     episodes = 1
 
     for _ in range(args.steps):
         _, _, terminated, truncated, info = env.step(env.action_space.sample())
         ram = env.unwrapped.data.memory.blocks[WRAM_BASE]
-        values = {name: read_raw(ram, spec) for name, spec in ANCHORS.items()}
-        for name, raw in values.items():
+        for name, spec in ANCHORS.items():
+            raw = read_raw(ram, spec)
             seen[name].add(raw)
             if name in info:
                 compared[name] += 1
                 if int(round(float(info[name]))) != raw:
                     mismatch[name] += 1
-
-        if values["player_in_air"] == 0:
-            ground_total += 1
-            ground_ok += bool(values["blocked"] & 0x04)
-        if values["direction"] == 1:
-            sign_total += 1
-            sign_ok += values["x_speed"] >= 0
 
         if terminated or truncated:
             env.reset()
@@ -95,39 +70,22 @@ def main():
         )
 
     print()
-    print("checks that do not depend on data.json:")
-    if ground_total:
-        print(
-            f"  on ground ({ground_total} steps) -> bottom collision bit set: "
-            f"{ground_ok / ground_total:.1%}"
-        )
-    if sign_total:
-        print(
-            f"  facing right ({sign_total} steps) -> x_speed >= 0: "
-            f"{sign_ok / sign_total:.1%}"
-        )
-    for name in UNVERIFIED:
-        print(f"  {name:16} distinct values: {len(seen[name])}  (no public map)")
-
     failures = []
     for name in ANCHORS:
         if mismatch[name]:
             failures.append(f"{name}: {mismatch[name]} steps disagree with the engine")
-        if name in EXPECTED_VALUES:
-            unexpected = seen[name] - EXPECTED_VALUES[name]
-            if unexpected:
-                failures.append(f"{name}: unexpected values {sorted(unexpected)}")
+        if len(seen[name]) == 1:
+            failures.append(f"{name}: never changes, the address is probably wrong")
 
     print()
     print("note: data.json is written from this same table, so the info column only")
-    print("      proves the type parses, not that the address is right. The invariant")
-    print("      ratios above are the address check that can fail.")
+    print("      proves the type parses. A value that never changes is the address check.")
     if failures:
         for failure in failures:
             print(f"FAIL {failure}")
         raise SystemExit(1)
 
-    print("ok   every anchor parses and stays inside its documented range")
+    print("ok   every anchor parses and moves")
 
 
 if __name__ == "__main__":

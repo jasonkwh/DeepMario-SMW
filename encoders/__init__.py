@@ -6,7 +6,6 @@ __all__ = [
     "CNNEncoder",
     "Encoder",
     "EncoderType",
-    "RAMEncoder",
     "build_encoder",
     "build_policy",
 ]
@@ -17,10 +16,6 @@ def __getattr__(name: str) -> Any:
         from .cnn import CNNEncoder
 
         return CNNEncoder
-    if name == "RAMEncoder":
-        from .ram import RAMEncoder
-
-        return RAMEncoder
     if name == "build_encoder":
         from .factory import build_encoder
 

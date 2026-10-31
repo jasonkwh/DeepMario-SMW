@@ -15,8 +15,7 @@ One policy is meant to clear the whole game; `Yoshi's Island 1` is just the stag
 it learns first, picked by `STATE_NAME` in `config.py`.
 
 Perception is pluggable (`ENCODER`): `cnn` reads stacked 84x96 grayscale frames,
-`ram` reads a 16-dim vector decoded from 12 anchored WRAM bytes into an MLP, and
-`cnn-yolo` is planned.
+and `cnn-yolo` is planned.
 Everything downstream - reward, wrappers, evaluation, the training loop - is
 shared, so the three stay comparable. The action space is 19 discrete button
 combinations.
@@ -57,8 +56,8 @@ source .venv/bin/activate                # enter .venv in this shell
 deactivate                               # leave it again
 ```
 
-`ram` and `cnn-yolo` raise as soon as the encoder is built, before any
-environment starts, until their encoders land.
+`cnn-yolo` raises as soon as the encoder is built, before any environment
+starts, until that encoder lands.
 
 ## Configuration
 
@@ -91,7 +90,6 @@ flowchart TD
   subgraph P["perception"]
     direction LR
     CNN["cnn<br/>pixels"]
-    RAM["ram<br/>16 dims, WRAM"]
     YOLO["cnn-yolo<br/>planned"]
   end
   REW["reward<br/>rules + progress estimate"]
@@ -102,7 +100,7 @@ flowchart TD
   REW --> PPO
   classDef live fill:#dbe9f7,stroke:#3f6fa8,color:#12314f
   classDef todo fill:#f5f6f7,stroke:#98a2ad,stroke-dasharray: 4 3,color:#4a5560
-  class CNN,RAM,REW,PPO live
+  class CNN,REW,PPO live
   class YOLO todo
   style P fill:#fff8ef,stroke:#b5762a
 ```
@@ -140,11 +138,10 @@ enum to an encoder; unimplemented ones raise instead of silently falling back.
 | `ENCODER`  | State       |                                                                                           |
 | ---------- | ----------- | ----------------------------------------------------------------------------------------- |
 | `cnn`      | implemented | Stock `NatureCNN`: conv 32x8x8/4, 64x4x4/2, 64x3x3/1, flatten, linear 512, then PPO heads |
-| `ram`      | implemented | 16 dims from 12 WRAM bytes: position, signed speed, facing, 5 collision bits, state flags, powerup, timer |
 | `cnn-yolo` | planned     | Pixel stream plus a detection stream                                                      |
 
 The `cnn` encoder deliberately adds nothing on top of `NatureCNN` - it is the
-end-to-end baseline the other two are measured against.
+end-to-end baseline, and the target: the project is a vision model.
 
 ## Reward
 
@@ -214,20 +211,17 @@ files are removed first so a fresh run cannot inherit an old best. Reuse
 
 ## Game data
 
-`setup.py` adds these fields to `data.json`: `x`, `y` (position, drives progress),
-`powerup` (00 small, 01 big, 02 cape, 03 fire), `item` (item box), `timer_hundreds`
-/ `timer_tens` / `timer_ones`, `level_end_timer` (non-zero once completion starts),
-`star_timer`. `anchor.py` is the single table behind both this patch and the `ram`
-observation: each entry carries the address, the type, and an `obs` spec (a scale, a
-flag, a bitfield, or `None` when only the reward reads it).
+`setup.py` adds these fields to `data.json`: `x` / `y` (position), `powerup` (00
+small, 01 big, 02 cape, 03 fire), `item` (item box), `timer_hundreds` /
+`timer_tens` / `timer_ones`, `level_end_timer` (non-zero once completion starts),
+`star_timer`. `lives`, `coins` and `score` come with the stock game data and need no
+patch. `anchor.py` is the single table behind that patch, and nothing else reads it:
+reward and the progress metric are the only consumers, so the perception stack stays
+purely visual.
 
-The `ram` encoder is a **control arm**, not a target: it exists to answer whether a
-failure is perceptual or comes from reward/algorithm, so its feature set is frozen at
-what is cheap and verified. Verify the anchors against the running game with
-`.venv/bin/python tools/probe_anchors.py`; it reports which anchors disagree with the
-engine and which never change. Decision rule: if `ram` cannot clear the stage either,
-the problem is not perception; if it can while `cnn` cannot, perception is the
-bottleneck.
+`.venv/bin/python tools/probe_anchors.py` checks those anchors against the running
+game: it reports any field that disagrees with the engine or never changes, which is
+how a stale address gets caught.
 
 ## Known limitations
 
